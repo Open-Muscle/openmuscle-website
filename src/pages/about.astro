@@ -2,10 +2,12 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const timeline = [
-  { year: "2022", title: "The Beginning", desc: "Tory builds the first OM-12 band with 12 sensors. Open Muscle is born from frustration with proprietary prosthetics. Featured on Hackaday and Electromaker.", color: "orange" },
-  { year: "2023", title: "LASK & Data Collection", desc: "LASK device created for labeled data acquisition. First ML models trained using Random Forest Regressors. Community starts growing.", color: "blue" },
-  { year: "2024", title: "FlexGrid Development", desc: "60-sensor FlexGrid (15x4) designed with flexible PCB and ESP32-S3. LASK5-V3 nears production. VR HID expansion begins.", color: "orange" },
-  { year: "2025", title: "Scaling Up", desc: "Unified software architecture underway. OSHWA certification pursued. New collaborators join including devEco group and C developers.", color: "blue" },
+  { year: "2022", title: "The Very First Prototype", desc: "A single 2×2 pressure sensor cell — the first working prototype ever built. Proof that pressure myography could detect muscle contractions. OpenMuscle is born.", color: "orange", image: "/images/timeline/2022-first-prototype.png" },
+  { year: "2023", title: "Piston Hall & Magnet Sensors", desc: "First piston-based Hall effect and magnet sensor assembly. Hand-built, hand-tested — figuring out how to reliably measure muscle topology changes through pressure.", color: "blue", image: "/images/timeline/2023-piston-sensor.png" },
+  { year: "2023", title: "OM-12 Custom Piston Sensors", desc: "The OM-12 band takes shape with 12 custom piston sensors arranged around the forearm. This was the design before the keyboard switch upgrade simplified manufacturing.", color: "orange", image: "/images/timeline/2023-om12-pistons.png" },
+  { year: "2023", title: "OM-12 + LASK-5 Data Collection", desc: "Keyboard switches replace custom pistons. The LASK-5 labeling device captures ground-truth finger positions. First real paired datasets for ML training. Featured on Hackaday and Electromaker.", color: "blue", image: "/images/timeline/2023-om12-keyboard-lask5.png" },
+  { year: "2024", title: "FlexGrid + LASK-5 Prototype", desc: "The FlexGrid concept comes to life — 60 sensors in a 15×4 flexible PCB grid paired with the LASK-5 for labeled data capture. A massive leap from the 12-sensor OM-12.", color: "orange", image: "/images/timeline/2024-flexgrid-lask5.png" },
+  { year: "2026", title: "FlexGrid Flexible PCB (Current)", desc: "The current flagship: a production-quality flexible PCB design with ESP32-S3, 60 pressure sensors at just 3mm thick. Ready for community testing and iteration.", color: "blue", image: "/images/timeline/2026-flexgrid-pcb.png" },
 ];
 ---
 
@@ -62,7 +64,17 @@ const timeline = [
               <!-- Dot -->
               <div class={`absolute left-4 top-1 w-5 h-5 rounded-full border-2 ${item.color === 'orange' ? 'bg-orange-light border-orange-primary' : 'bg-blue-light border-blue-primary'}`}></div>
 
-              <div class="card bg-white/80">
+              <div class="card bg-white/80 overflow-hidden">
+                {item.image && (
+                  <div class="-mx-5 -mt-5 mb-4">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      class="w-full h-56 object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
                 <div class={`text-sm font-bold mb-1 ${item.color === 'orange' ? 'text-orange-bold' : 'text-blue-primary'}`}>{item.year}</div>
                 <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
                 <p class="text-sm text-text-base/60">{item.desc}</p>
