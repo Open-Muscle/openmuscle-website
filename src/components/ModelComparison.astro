@@ -1,0 +1,120 @@
+---
+/**
+ * Model comparison bar chart — 6 algorithms compared on FlexGrid-64
+ */
+---
+
+<div class="model-comparison-wrap">
+  <h3 class="text-lg font-semibold text-text-base mb-3">Model Comparison (FlexGrid-64)</h3>
+  <div style="position: relative; height: 320px; width: 100%;">
+    <canvas id="model-compare-canvas"></canvas>
+  </div>
+  <p class="mt-2 text-xs text-text-base/50">
+    R² score on 683 holdout samples. Higher is better. ExtraTrees selected as best overall performer.
+  </p>
+</div>
+
+<script>
+async function initModelComparison() {
+  if (!window.Chart) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  const res = await fetch('/data/model_comparison.json');
+  const data = await res.json();
+
+  const labels = Object.keys(data);
+  const displayNames = {
+    'RF-100': 'Random Forest\n(100 trees)',
+    'RF-300': 'Random Forest\n(300 trees)',
+    'RF-500-tuned': 'Random Forest\n(500, tuned)',
+    'ExtraTrees-300': 'ExtraTrees\n(300 trees)',
+    'GBR-300': 'Gradient Boost\n(300)',
+    'RF-300+deltas': 'RF + Rolling\nDeltas',
+  };
+
+  const overallR2 = labels.map(k => data[k].overall_r2);
+  const perLabel = [0, 1, 2, 3].map(li =>
+    labels.map(k => data[k].per_label[`label_${li}`])
+  );
+
+  const canvas = document.getElementById('model-compare-canvas');
+
+  new window.Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: labels.map(k => displayNames[k] || k),
+      datasets: [
+        {
+          label: 'Overall R²',
+          data: overallR2,
+          backgroundColor: labels.map(k =>
+            k === 'ExtraTrees-300' ? '#FF9F63' : '#FFBFA3'
+          ),
+          borderColor: labels.map(k =>
+            k === 'ExtraTrees-300' ? '#FF9F63' : '#FFBFA3'
+          ),
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: 'label_0 (Index)',
+          data: perLabel[0],
+          backgroundColor: '#6FBEE680',
+          borderRadius: 4,
+        },
+        {
+          label: 'label_1 (Middle)',
+          data: perLabel[1],
+          backgroundColor: '#70D6FF80',
+          borderRadius: 4,
+        },
+        {
+          label: 'label_2 (Ring)',
+          data: perLabel[2],
+          backgroundColor: '#BFE8FF80',
+          borderRadius: 4,
+        },
+        {
+          label: 'label_3 (Pinky)',
+          data: perLabel[3],
+          backgroundColor: '#C2ECFF80',
+          borderRadius: 4,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      scales: {
+        x: {
+          ticks: { color: '#2C2C2C', font: { size: 10 } },
+          grid: { display: false },
+        },
+        y: {
+          min: 0,
+          max: 1,
+          title: { display: true, text: 'R² Score', color: '#2C2C2C' },
+          ticks: { color: '#2C2C2C' },
+          grid: { color: 'rgba(111,190,230,0.15)' },
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { color: '#2C2C2C', boxWidth: 12, padding: 12 }
+        },
+      }
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initModelComparison);
+</script>

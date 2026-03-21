@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const repos = [
+  { name: "OpenMuscle-Hub", desc: "Central documentation and project hub for the OpenMuscle ecosystem.", tags: ["Docs", "Hub"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Hub" },
+  { name: "OpenMuscle-FlexGrid", desc: "60-sensor (15x4) forearm band with flexible PCB and ESP32-S3. Current flagship hardware.", tags: ["Hardware", "ESP32-S3"], license: "CERN-OHL-S", url: "https://github.com/Open-Muscle/OpenMuscle-FlexGrid" },
+  { name: "OpenMuscle-LASK5", desc: "Label Acquiring System K5 — handheld device for capturing ground-truth finger positions for ML training.", tags: ["Hardware", "ML Training"], license: "CERN-OHL-S", url: "https://github.com/Open-Muscle/OpenMuscle-LASK5" },
+  { name: "OpenMuscle-Software", desc: "Python & MicroPython codebase for data collection, preprocessing, and Random Forest finger prediction.", tags: ["Python", "MicroPython"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Software" },
+  { name: "OpenMuscle-Firmware", desc: "Device firmware for OpenMuscle hardware including ESP32-S3 FlexGrid boards.", tags: ["Firmware", "ESP32"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Firmware" },
+  { name: "FlexGridV1-Firmware", desc: "MicroPython firmware specifically for ESP32-S3 FlexGrid V1 hardware.", tags: ["MicroPython", "FlexGrid"], license: "MIT", url: "https://github.com/Open-Muscle/FlexGridV1-Firmware" },
+  { name: "OpenMuscle-Band", desc: "Original OM-12 armband with 12 sensors. Legacy MVP that proved the concept.", tags: ["Hardware", "Legacy"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Band" },
+  { name: "openmuscle (archived)", desc: "Original repository with early datasets and proof of concept. 47+ stars on GitHub.", tags: ["Archive", "Datasets"], license: "MIT", url: "https://github.com/turfptax/openmuscle" },
+];
+---
+
+<BaseLayout title="Repositories">
+  <section class="blueprint-grid-dense">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="mb-12">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+          <span class="text-orange-bold">Repositories</span>
+        </h1>
+        <p class="text-lg text-text-base/60 max-w-3xl">
+          All of our work is open source. Explore the hardware designs, firmware, software, and documentation
+          that make up the OpenMuscle ecosystem.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {repos.map((repo) => (
+          <a href={repo.url} target="_blank" class="card group block">
+            <div class="flex items-start justify-between mb-3">
+              <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors">{repo.name}</h3>
+              <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </div>
+            <p class="text-sm text-text-base/60 mb-4">{repo.desc}</p>
+            <div class="flex flex-wrap gap-2 text-xs">
+              {repo.tags.map((tag) => (
+                <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">{tag}</span>
+              ))}
+              <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">{repo.license}</span>
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <div class="mt-12 text-center">
+        <a href="https://github.com/Open-Muscle" target="_blank" class="btn-primary inline-flex items-center gap-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View All on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

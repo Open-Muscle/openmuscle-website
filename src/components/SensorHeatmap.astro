@@ -1,0 +1,141 @@
+---
+/**
+ * Interactive FlexGrid-64 sensor heatmap — plays back real holdout data
+ * Canvas-based, no external dependencies
+ */
+---
+
+<div class="sensor-heatmap-wrap">
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-lg font-semibold text-text-base">FlexGrid-64 Sensor Heatmap</h3>
+    <div class="flex items-center gap-3 text-sm text-text-base/60">
+      <button id="heatmap-play" class="px-3 py-1 rounded bg-orange-primary text-white hover:bg-orange-bold transition-colors">Play</button>
+      <select id="heatmap-speed" class="px-2 py-1 rounded border border-blue-light bg-white text-text-base text-sm">
+        <option value="1">1x</option>
+        <option value="2" selected>2x</option>
+        <option value="4">4x</option>
+      </select>
+      <span id="heatmap-frame" class="font-mono">0 / 0</span>
+    </div>
+  </div>
+  <canvas id="sensor-canvas" class="w-full rounded-lg border border-blue-light" style="image-rendering: pixelated;"></canvas>
+  <div class="mt-2 flex items-center gap-2 text-xs text-text-base/50">
+    <span>Low</span>
+    <div class="flex-1 h-3 rounded" style="background: linear-gradient(to right, #BFE8FF, #6FBEE6, #FF9F63, #FFBFA3, #fff);"></div>
+    <span>High</span>
+  </div>
+</div>
+
+<script>
+async function initHeatmap() {
+  const canvas = document.getElementById('sensor-canvas') as HTMLCanvasElement;
+  const ctx = canvas.getContext('2d')!;
+  const playBtn = document.getElementById('heatmap-play') as HTMLButtonElement;
+  const speedSel = document.getElementById('heatmap-speed') as HTMLSelectElement;
+  const frameSpan = document.getElementById('heatmap-frame')!;
+
+  // Load real FlexGrid-64 data
+  const res = await fetch('/data/flexgrid64_holdout_predictions.json');
+  const data = await res.json();
+
+  const rows = data.metadata.sensor_layout.rows; // 4
+  const cols = data.metadata.sensor_layout.cols; // 16
+  const nSamples = data.metadata.n_samples;      // 683
+
+  // Build sensor matrix: [sample][row][col]
+  const sensorKeys = data.metadata.sensor_columns as string[];
+  const frames: number[][][] = [];
+  let globalMin = Infinity, globalMax = -Infinity;
+
+  for (let s = 0; s < nSamples; s++) {
+    const frame: number[][] = [];
+    for (let r = 0; r < rows; r++) {
+      const row: number[] = [];
+      for (let c = 0; c < cols; c++) {
+        const key = `R${r}C${c}`;
+        const val = data.sensor_data[key][s];
+        row.push(val);
+        if (val < globalMin) globalMin = val;
+        if (val > globalMax) globalMax = val;
+      }
+      frame.push(row);
+    }
+    frames.push(frame);
+  }
+
+  // Canvas sizing
+  const cellSize = 28;
+  const gap = 2;
+  const cw = cols * (cellSize + gap) + gap;
+  const ch = rows * (cellSize + gap) + gap;
+  canvas.width = cw;
+  canvas.height = ch;
+  canvas.style.maxWidth = '100%';
+  canvas.style.height = 'auto';
+
+  function valueToColor(val: number): string {
+    const t = (val - globalMin) / (globalMax - globalMin || 1);
+    // Blue -> Orange gradient matching brand colors
+    const r = Math.round(111 + (255 - 111) * t);  // #6F -> #FF
+    const g = Math.round(190 + (159 - 190) * t);   // #BE -> #9F
+    const b = Math.round(230 + (99 - 230) * t);    // #E6 -> #63
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function drawFrame(idx: number) {
+    const frame = frames[idx];
+    ctx.fillStyle = '#FEF9F5';
+    ctx.fillRect(0, 0, cw, ch);
+
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = gap + c * (cellSize + gap);
+        const y = gap + r * (cellSize + gap);
+        ctx.fillStyle = valueToColor(frame[r][c]);
+        ctx.beginPath();
+        ctx.roundRect(x, y, cellSize, cellSize, 4);
+        ctx.fill();
+      }
+    }
+    frameSpan.textContent = `${idx + 1} / ${nSamples}`;
+  }
+
+  // Playback state
+  let playing = false;
+  let frameIdx = 0;
+  let intervalId: number | null = null;
+
+  function startPlayback() {
+    if (intervalId) clearInterval(intervalId);
+    const speed = parseInt(speedSel.value);
+    const ms = Math.max(16, Math.round(100 / speed));
+    intervalId = window.setInterval(() => {
+      frameIdx = (frameIdx + 1) % nSamples;
+      drawFrame(frameIdx);
+    }, ms);
+    playing = true;
+    playBtn.textContent = 'Pause';
+  }
+
+  function stopPlayback() {
+    if (intervalId) clearInterval(intervalId);
+    intervalId = null;
+    playing = false;
+    playBtn.textContent = 'Play';
+  }
+
+  playBtn.addEventListener('click', () => {
+    if (playing) stopPlayback();
+    else startPlayback();
+  });
+
+  speedSel.addEventListener('change', () => {
+    if (playing) startPlayback(); // restart with new speed
+  });
+
+  // Draw first frame
+  drawFrame(0);
+}
+
+document.addEventListener('DOMContentLoaded', initHeatmap);
+</script>

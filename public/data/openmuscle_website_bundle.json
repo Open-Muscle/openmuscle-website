@@ -1,0 +1,105 @@
+{
+  "bundle_version": "1.0",
+  "project": "OpenMuscle",
+  "description": "ML prediction datasets for two OpenMuscle sensor devices — OM-12 (SensorBand) and FlexGrid-64. Each dataset contains raw sensor readings, ground-truth LASK5 labels, and model predictions on holdout data never seen during training.",
+  "devices": [
+    {
+      "id": "om12",
+      "name": "OM-12 SensorBand",
+      "description": "3 SensorBand banks (OM-SB-V1-C.0/1/2), each with 4 hall-effect sensors. Legacy wearable form factor.",
+      "sensor_layout": {"rows": 3, "cols": 4, "total": 12},
+      "label_device": "LASK5",
+      "label_count": 4,
+      "data_file": "om12_capture_72_predictions.json",
+      "visualization": "om12_capture_72_viz.png",
+      "training": {
+        "model_type": "RandomForestRegressor (100 trees)",
+        "train_files": ["capture_70.txt", "capture_71.txt"],
+        "holdout_file": "capture_72.txt",
+        "train_samples": "~6400 (two captures combined)",
+        "holdout_samples": 1480,
+        "holdout_start_offset": 1762,
+        "note": "Raw .txt captures converted via legacy packet parser with timestamp-based pairing (±100ms window)"
+      },
+      "metrics": {
+        "overall_r2": 0.264,
+        "per_label": {
+          "label_0": {"r2": 0.366},
+          "label_1": {"r2": 0.496},
+          "label_2": {"r2": 0.078},
+          "label_3": {"r2": 0.123}
+        }
+      }
+    },
+    {
+      "id": "flexgrid64",
+      "name": "FlexGrid-64",
+      "description": "4x16 hall-effect pressure sensor grid. Higher resolution successor to OM-12. Captures full hand pressure distribution.",
+      "sensor_layout": {"rows": 4, "cols": 16, "total": 64},
+      "label_device": "LASK5",
+      "label_count": 4,
+      "data_file": "flexgrid64_holdout_predictions.json",
+      "visualization": "flexgrid64_holdout_viz.png",
+      "interactive_viewer": "flexgrid64_viewer.html",
+      "training": {
+        "model_type": "ExtraTreesRegressor (300 trees)",
+        "train_files": ["flexgrid_merged_1752717273.csv", "flexgrid_merged_1752717390.csv (first half)"],
+        "holdout_file": "flexgrid_merged_1752717390.csv (second half)",
+        "train_samples": 1669,
+        "holdout_samples": 683,
+        "note": "ExtraTrees selected after comparing 6 model types on same split. All data from same capture session — cross-session models fail due to sensor baseline drift."
+      },
+      "metrics": {
+        "overall_r2": 0.660,
+        "per_label": {
+          "label_0": {"r2": 0.782},
+          "label_1": {"r2": 0.783},
+          "label_2": {"r2": 0.686},
+          "label_3": {"r2": 0.390}
+        }
+      },
+      "model_comparison": {
+        "RandomForest_100": 0.607,
+        "RandomForest_300": 0.609,
+        "RandomForest_500_tuned": 0.607,
+        "ExtraTrees_300": 0.660,
+        "GradientBoosting_300": 0.542,
+        "RandomForest_rolling_deltas": 0.594
+      }
+    }
+  ],
+  "methodology": {
+    "overview": "Both devices use hall-effect sensors to measure finger pressure/flexion. The LASK5 linear actuator system provides ground-truth finger position labels (4 channels, normalized 0-1). Models are trained to predict LASK5 labels from sensor readings alone.",
+    "pipeline": [
+      "1. Data capture: sensor packets and LASK5 labels are received over UDP and paired by timestamp",
+      "2. CSV export: paired data is saved with sensor columns (R{row}C{col} or Sensor_{n}) and label columns (label_0 through label_3)",
+      "3. Train/test split: holdout data is kept separate and never seen during training",
+      "4. Model training: tree-based regressors (RandomForest or ExtraTrees) trained on sensor→label mapping",
+      "5. Inference: trained model predicts labels from holdout sensor data",
+      "6. Export: sensor data, true labels, and predictions exported as JSON for web visualization"
+    ],
+    "key_findings": [
+      "FlexGrid-64 (R²=0.660) significantly outperforms OM-12 (R²=0.264) due to 5x more sensors capturing finer pressure gradients",
+      "ExtraTrees outperforms RandomForest by ~5% R² on FlexGrid data — random split thresholds reduce overfitting on noisy sensor readings",
+      "Sensor baselines drift between capture sessions, making cross-session prediction unreliable without calibration",
+      "More same-session training data is the single biggest accuracy driver (0.330 → 0.660 by adding first-half of test file to training)",
+      "Tree count has diminishing returns — 100 vs 500 trees gives <0.002 R² improvement",
+      "label_3 is consistently hardest to predict across both devices, suggesting less distinct sensor activation for that finger"
+    ],
+    "data_format": {
+      "sensor_data": "Object with sensor column names as keys, each containing an array of float values per sample",
+      "labels": "Object with label_0 through label_3 as keys, each containing ground-truth float arrays (0-1)",
+      "predictions": "Object with label_0 through label_3 as keys, each containing predicted float arrays",
+      "metadata": "Device info, sample counts, train/test split details, R² metrics"
+    }
+  },
+  "files": {
+    "om12_capture_72_predictions.json": "OM-12 sensor data + labels + predictions (1480 samples)",
+    "flexgrid64_holdout_predictions.json": "FlexGrid-64 sensor data + labels + predictions (683 samples)",
+    "flexgrid64_viewer.html": "Interactive HTML viewer for FlexGrid-64 (requires serving via HTTP)",
+    "METHODOLOGY.md": "Detailed methodology documentation",
+    "model_comparison.json": "Raw R² scores for all 6 models tested on FlexGrid-64",
+    "om12_capture_72_viz.png": "OM-12 static visualization",
+    "flexgrid64_holdout_viz.png": "FlexGrid-64 static visualization"
+  }
+}

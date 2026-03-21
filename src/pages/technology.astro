@@ -1,0 +1,260 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SensorHeatmap from '../components/SensorHeatmap.astro';
+import PredictionChart from '../components/PredictionChart.astro';
+import ModelComparison from '../components/ModelComparison.astro';
+---
+
+<BaseLayout title="Technology — OpenMuscle" description="Pressure Myography sensors, ML finger prediction, and real inference data from OpenMuscle devices.">
+
+  <!-- Hero -->
+  <section class="relative py-20 bg-gradient-to-b from-bg-warm to-bg-cool overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        <span class="text-orange-primary">Pressure Myography</span><br />
+        <span class="text-text-base">Meets Machine Learning</span>
+      </h1>
+      <p class="text-lg text-text-base/70 max-w-2xl mx-auto">
+        Hall-effect sensors measure forearm pressure patterns while machine learning
+        predicts individual finger movements — no EMG, no electrodes, no patents.
+      </p>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-8 text-center">How It Works</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+        <div class="p-6 rounded-xl border border-blue-light bg-blue-light/10">
+          <div class="w-12 h-12 rounded-full bg-orange-primary/20 flex items-center justify-center mb-4">
+            <span class="text-xl font-bold text-orange-bold">1</span>
+          </div>
+          <h3 class="text-lg font-semibold text-text-base mb-2">Sense</h3>
+          <p class="text-text-base/70">
+            Hall-effect sensors in a flexible grid detect pressure changes on the forearm
+            as muscles contract. The FlexGrid-64 uses a 4&times;16 array — 64 sensors
+            capturing the full pressure distribution.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl border border-blue-light bg-blue-light/10">
+          <div class="w-12 h-12 rounded-full bg-orange-primary/20 flex items-center justify-center mb-4">
+            <span class="text-xl font-bold text-orange-bold">2</span>
+          </div>
+          <h3 class="text-lg font-semibold text-text-base mb-2">Predict</h3>
+          <p class="text-text-base/70">
+            An ExtraTreesRegressor trained on paired sensor/actuator data predicts
+            individual finger positions from raw sensor readings alone. No feature
+            engineering — just 64 raw values in, 4 finger positions out.
+          </p>
+        </div>
+
+        <div class="p-6 rounded-xl border border-blue-light bg-blue-light/10">
+          <div class="w-12 h-12 rounded-full bg-orange-primary/20 flex items-center justify-center mb-4">
+            <span class="text-xl font-bold text-orange-bold">3</span>
+          </div>
+          <h3 class="text-lg font-semibold text-text-base mb-2">Move</h3>
+          <p class="text-text-base/70">
+            Predicted finger positions drive a prosthetic hand in real time. The LASK5
+            linear actuator system provides ground truth during training, then the model
+            runs independently on new sensor data.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proof of Concept Disclaimer -->
+  <section class="py-6 bg-orange-light/30 border-y border-orange-primary/20">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="text-sm text-text-base/80">
+          <strong class="text-text-base">Proof of Concept:</strong> The results below demonstrate that finger movement data
+          <em>can</em> be extracted from pressure myography sensors using machine learning. These models were trained on
+          very small datasets (under 2 minutes of recording) in controlled conditions. Prediction accuracy is limited —
+          we believe that hardware design improvements and substantially larger datasets (10+ minutes of continuous capture)
+          will yield significantly better results. This is early-stage research, not a finished product.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Sensor Data -->
+  <section class="py-16 bg-bg-cool">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Real Sensor Data</h2>
+      <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
+        683 holdout samples from the FlexGrid-64 — data the model never saw during training.
+        Press Play to watch the pressure patterns change in real time.
+      </p>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-light/30">
+        <SensorHeatmap />
+      </div>
+    </div>
+  </section>
+
+  <!-- Prediction Results -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Finger Prediction Accuracy</h2>
+      <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
+        Blue is ground truth from the LASK5 actuators. Orange is what the ML model predicted
+        from sensor data alone. Select a finger to compare.
+      </p>
+
+      <div class="space-y-12">
+        <!-- FlexGrid-64 -->
+        <div class="bg-bg-warm rounded-2xl p-6 shadow-sm border border-orange-light/50">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold text-sm font-semibold">FlexGrid-64</span>
+            <span class="text-text-base/50 text-sm">64 sensors — ExtraTrees — R² = 0.660</span>
+          </div>
+          <div>
+            <PredictionChart device="flexgrid64" />
+          </div>
+        </div>
+
+        <!-- OM-12 -->
+        <div class="bg-bg-warm rounded-2xl p-6 shadow-sm border border-orange-light/50">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1 rounded-full bg-blue-primary/20 text-blue-primary text-sm font-semibold">OM-12 SensorBand</span>
+            <span class="text-text-base/50 text-sm">12 sensors — RandomForest — R² = 0.264</span>
+          </div>
+          <div>
+            <PredictionChart device="om12" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 p-4 rounded-xl bg-blue-light/20 border border-blue-light/40 text-sm text-text-base/70">
+        <strong class="text-text-base">Why the difference?</strong> The FlexGrid-64 has 5&times; more sensors (64 vs 12)
+        and captures full hand pressure distribution. The OM-12 uses 3 separate SensorBand banks
+        with only 4 sensors each — less spatial resolution means less signal for the ML model to work with.
+      </div>
+    </div>
+  </section>
+
+  <!-- Model Comparison -->
+  <section class="py-16 bg-bg-cool">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Model Selection</h2>
+      <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
+        Six algorithms evaluated on the same train/test split. ExtraTrees won with the best
+        balance across all four fingers, especially the harder-to-predict pinky (label_3).
+      </p>
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-light/30">
+        <div>
+          <ModelComparison />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Devices -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-8 text-center">Devices</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="rounded-2xl border border-orange-light overflow-hidden">
+          <div class="p-6 bg-gradient-to-br from-orange-light/30 to-white">
+            <h3 class="text-xl font-bold text-text-base mb-2">FlexGrid-64</h3>
+            <p class="text-text-base/70 mb-4">
+              4&times;16 hall-effect pressure sensor grid. The current-generation device
+              with full hand pressure distribution capture.
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-text-base/60">Sensors</span><span class="font-mono text-orange-bold">64 (4&times;16)</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Best R²</span><span class="font-mono text-orange-bold">0.660</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Model</span><span class="font-mono text-orange-bold">ExtraTrees (300)</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Training Data</span><span class="font-mono text-orange-bold">1,669 samples</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-blue-light overflow-hidden">
+          <div class="p-6 bg-gradient-to-br from-blue-light/30 to-white">
+            <h3 class="text-xl font-bold text-text-base mb-2">OM-12 SensorBand</h3>
+            <p class="text-text-base/70 mb-4">
+              3 SensorBand banks with 4 sensors each. Legacy wearable form factor —
+              the original proof-of-concept device.
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-text-base/60">Sensors</span><span class="font-mono text-blue-primary">12 (3&times;4)</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Best R²</span><span class="font-mono text-blue-primary">0.264</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Model</span><span class="font-mono text-blue-primary">RandomForest (100)</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Training Data</span><span class="font-mono text-blue-primary">~6,400 samples</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Methodology -->
+  <section class="py-16 bg-bg-warm">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-8 text-center">Methodology</h2>
+
+      <div class="space-y-6">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-orange-bold">1</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-text-base">Data Capture</h4>
+            <p class="text-text-base/70 text-sm">Sensor packets and LASK5 labels received over UDP, paired by timestamp</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-orange-bold">2</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-text-base">CSV Export</h4>
+            <p class="text-text-base/70 text-sm">Paired data saved with sensor columns and label columns (label_0 through label_3)</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-orange-bold">3</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-text-base">Train/Test Split</h4>
+            <p class="text-text-base/70 text-sm">Holdout data kept completely separate — never seen during training</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-orange-bold">4</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-text-base">Model Training</h4>
+            <p class="text-text-base/70 text-sm">Tree-based regressors trained on sensor-to-label mapping (raw values, no feature engineering)</p>
+          </div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center">
+            <span class="text-sm font-bold text-orange-bold">5</span>
+          </div>
+          <div>
+            <h4 class="font-semibold text-text-base">Inference & Export</h4>
+            <p class="text-text-base/70 text-sm">Trained model predicts labels from holdout sensor data; results exported as JSON for visualization</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 p-4 rounded-xl bg-orange-light/30 border border-orange-primary/20 text-sm text-text-base/70">
+        <strong class="text-text-base">Key finding:</strong> Sensor baselines shift between sessions (mean values drift by ~300),
+        making cross-session prediction unreliable. All training and test data must come from the same session
+        until calibration/normalization is solved.
+      </div>
+    </div>
+  </section>
+
+</BaseLayout>

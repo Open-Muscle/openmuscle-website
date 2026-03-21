@@ -1,0 +1,152 @@
+---
+/**
+ * Actual vs Predicted line chart — plays back real LASK5 label data
+ * Uses Chart.js loaded from CDN
+ */
+interface Props {
+  device?: 'flexgrid64' | 'om12';
+}
+const { device = 'flexgrid64' } = Astro.props;
+const dataFile = device === 'flexgrid64'
+  ? '/data/flexgrid64_holdout_predictions.json'
+  : '/data/om12_capture_72_predictions.json';
+---
+
+<div class="prediction-chart-wrap" data-device={device} data-file={dataFile}>
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="text-lg font-semibold text-text-base">
+      {device === 'flexgrid64' ? 'FlexGrid-64' : 'OM-12 SensorBand'} — Actual vs Predicted
+    </h3>
+    <div class="flex items-center gap-2 text-sm">
+      <label class="text-text-base/60">Finger:</label>
+      <select class="pred-label-select px-2 py-1 rounded border border-blue-light bg-white text-text-base text-sm">
+        <option value="0">Index (label_0)</option>
+        <option value="1">Middle (label_1)</option>
+        <option value="2">Ring (label_2)</option>
+        <option value="3">Pinky (label_3)</option>
+      </select>
+    </div>
+  </div>
+  <div style="position: relative; height: 280px; width: 100%;">
+    <canvas class="pred-canvas"></canvas>
+  </div>
+  <div class="mt-2 flex gap-4 text-xs text-text-base/60">
+    <span class="flex items-center gap-1">
+      <span class="inline-block w-3 h-0.5 bg-blue-primary"></span> Actual (LASK5)
+    </span>
+    <span class="flex items-center gap-1">
+      <span class="inline-block w-3 h-0.5 bg-orange-primary"></span> Predicted (ML)
+    </span>
+  </div>
+</div>
+
+<script>
+async function loadChartJs(): Promise<void> {
+  if ((window as any).Chart) return;
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js';
+    s.onload = () => resolve();
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function initAllPredCharts() {
+  await loadChartJs();
+
+  document.querySelectorAll('.prediction-chart-wrap').forEach(async (wrap) => {
+    const el = wrap as HTMLElement;
+    const dataFile = el.dataset.file!;
+    const canvas = el.querySelector('.pred-canvas') as HTMLCanvasElement;
+    const select = el.querySelector('.pred-label-select') as HTMLSelectElement;
+
+    const res = await fetch(dataFile);
+    const data = await res.json();
+
+    const labelsObj = data.labels || {};
+    const predsObj = data.predictions || {};
+    const isUpper = !!labelsObj['Label_0'];
+    const keyFn = (i: number) => isUpper ? `Label_${i}` : `label_${i}`;
+
+    let chart: any = null;
+
+    function buildChart(labelIdx: number) {
+      const key = keyFn(labelIdx);
+      const actual = labelsObj[key] || [];
+      const predicted = predsObj[key] || [];
+
+      const maxPoints = 400;
+      const step = Math.max(1, Math.floor(actual.length / maxPoints));
+      const dsActual: number[] = [], dsPred: number[] = [], dsIdx: number[] = [];
+      for (let i = 0; i < actual.length; i += step) {
+        dsActual.push(actual[i]);
+        dsPred.push(predicted[i]);
+        dsIdx.push(i);
+      }
+
+      if (chart) chart.destroy();
+
+      chart = new (window as any).Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: dsIdx,
+          datasets: [
+            {
+              label: 'Actual (LASK5)',
+              data: dsActual,
+              borderColor: '#6FBEE6',
+              backgroundColor: 'rgba(111,190,230,0.1)',
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false,
+              tension: 0.3,
+            },
+            {
+              label: 'Predicted (ML)',
+              data: dsPred,
+              borderColor: '#FFBFA3',
+              backgroundColor: 'rgba(255,191,163,0.1)',
+              borderWidth: 2,
+              pointRadius: 0,
+              fill: false,
+              tension: 0.3,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 400 },
+          scales: {
+            x: {
+              display: true,
+              title: { display: true, text: 'Sample', color: '#2C2C2C' },
+              ticks: { color: '#2C2C2C', maxTicksLimit: 8 },
+              grid: { color: 'rgba(111,190,230,0.15)' },
+            },
+            y: {
+              display: true,
+              title: { display: true, text: 'Position (normalized)', color: '#2C2C2C' },
+              ticks: { color: '#2C2C2C' },
+              grid: { color: 'rgba(111,190,230,0.15)' },
+            }
+          },
+          plugins: {
+            legend: { display: false },
+          }
+        }
+      });
+    }
+
+    buildChart(0);
+    select.addEventListener('change', () => buildChart(parseInt(select.value)));
+  });
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initAllPredCharts);
+} else {
+  initAllPredCharts();
+}
+</script>

@@ -1,0 +1,392 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Home">
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden blueprint-grid-dense">
+    <!-- Decorative elements -->
+    <div class="absolute top-20 left-10 w-32 h-32 rounded-full bg-orange-light/30 blur-3xl"></div>
+    <div class="absolute bottom-20 right-10 w-40 h-40 rounded-full bg-blue-light/30 blur-3xl"></div>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <!-- Left: Text Content -->
+        <div class="space-y-8">
+          <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-pale/30 border border-blue-primary/20 text-sm text-blue-primary font-medium">
+            <span class="w-2 h-2 rounded-full bg-blue-primary animate-pulse"></span>
+            Open Source &middot; Open Hardware
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+            <span class="text-orange-bold">Prosthetic Sensors</span><br />
+            <span class="text-text-base">Open for All</span><br />
+            <span class="text-blue-primary">Humanity</span>
+          </h1>
+
+          <p class="text-lg text-text-base/70 max-w-lg leading-relaxed">
+            OpenMuscle is building affordable, open-source pressure myography sensors
+            that predict finger movements using machine learning. No patents. No paywalls.
+            Just technology that belongs to everyone.
+          </p>
+
+          <div class="flex flex-wrap gap-4">
+            <a href="https://github.com/Open-Muscle/OpenMuscle-Hub" target="_blank" class="btn-primary inline-flex items-center gap-2">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              Explore on GitHub
+            </a>
+            <a href="/technology" class="btn-secondary inline-flex items-center gap-2">
+              How It Works
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex gap-8 pt-4">
+            <div>
+              <div class="text-2xl font-bold text-orange-bold">64</div>
+              <div class="text-sm text-text-base/50">Sensors (FlexGrid)</div>
+            </div>
+            <div class="dotted-line-v pl-8">
+              <div class="text-2xl font-bold text-blue-primary">~$10</div>
+              <div class="text-sm text-text-base/50">Per Device</div>
+            </div>
+            <div class="dotted-line-v pl-8">
+              <div class="text-2xl font-bold text-orange-bold">MIT</div>
+              <div class="text-sm text-text-base/50">Licensed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real Sensor Heatmap -->
+        <div class="flex justify-center">
+          <div class="relative">
+            <canvas id="sensor-heatmap" width="500" height="200" class="sensor-canvas"></canvas>
+            <div class="flex items-center justify-between mt-2 px-1">
+              <div class="text-xs text-text-base/40">Real FlexGrid-64 holdout data (683 samples)</div>
+              <button id="hero-play" class="text-xs px-2 py-1 rounded bg-orange-primary/20 text-orange-bold hover:bg-orange-primary/40 transition-colors">Play</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What Is OpenMuscle -->
+  <section class="bg-white/60 border-y border-blue-light/20">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+          What is <span class="text-orange-bold">Open</span><span class="text-blue-primary">Muscle</span>?
+        </h2>
+        <p class="text-lg text-text-base/60 leading-relaxed">
+          An open-source biosensing ecosystem for wearable prosthetic control.
+          We use pressure myography &mdash; not EMG &mdash; to detect muscle contractions
+          and predict individual finger movements in real time.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1: Open Hardware -->
+        <div class="card group">
+          <div class="w-12 h-12 rounded-lg bg-orange-light/50 flex items-center justify-center mb-4 group-hover:bg-orange-light transition-colors">
+            <svg class="w-6 h-6 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Open Hardware</h3>
+          <p class="text-text-base/60 text-sm leading-relaxed">
+            ESP32-S3 microcontrollers, custom flexible PCBs, 3D-printed enclosures.
+            FlexGrid packs 64 sensors into a 4&times;16 grid at just 3mm thick.
+            All designs released under CERN-OHL-S v2.0.
+          </p>
+        </div>
+
+        <!-- Card 2: Machine Learning -->
+        <div class="card group">
+          <div class="w-12 h-12 rounded-lg bg-blue-pale/50 flex items-center justify-center mb-4 group-hover:bg-blue-light transition-colors">
+            <svg class="w-6 h-6 text-blue-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Machine Learning</h3>
+          <p class="text-text-base/60 text-sm leading-relaxed">
+            Random Forest Regressors predict finger movements from pressure data.
+            The LASK5 labeling device captures ground-truth training data.
+            Python pipelines process UDP sensor streams in real time.
+          </p>
+        </div>
+
+        <!-- Card 3: Community Driven -->
+        <div class="card group">
+          <div class="w-12 h-12 rounded-lg bg-orange-light/50 flex items-center justify-center mb-4 group-hover:bg-orange-light transition-colors">
+            <svg class="w-6 h-6 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+            </svg>
+          </div>
+          <h3 class="text-xl font-semibold mb-2">Community Driven</h3>
+          <p class="text-text-base/60 text-sm leading-relaxed">
+            Collaborators worldwide: Ultimate Robotics (EMG, Ukraine),
+            Delta Robotics (artificial muscles), PCBWay sponsor, devEco group.
+            Featured on Hackaday and Adafruit.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works (Brief) -->
+  <section class="blueprint-grid">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
+        How It <span class="text-blue-primary">Works</span>
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Step 1 -->
+        <div class="relative text-center px-4">
+          <div class="w-14 h-14 rounded-full bg-orange-primary/20 border-2 border-orange-primary flex items-center justify-center mx-auto mb-4">
+            <span class="text-xl font-bold text-orange-bold">1</span>
+          </div>
+          <h3 class="font-semibold mb-2">Wear</h3>
+          <p class="text-sm text-text-base/60">FlexGrid wraps around the forearm with 64 pressure sensors detecting muscle topology changes</p>
+          <div class="hidden md:block absolute top-7 -right-2 w-8">
+            <svg class="w-full text-blue-primary/40" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path stroke-dasharray="3 3" d="M0 4h20m-4-4l4 4-4 4"/></svg>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="relative text-center px-4">
+          <div class="w-14 h-14 rounded-full bg-blue-light/30 border-2 border-blue-primary flex items-center justify-center mx-auto mb-4">
+            <span class="text-xl font-bold text-blue-primary">2</span>
+          </div>
+          <h3 class="font-semibold mb-2">Sense</h3>
+          <p class="text-sm text-text-base/60">Sensors capture pressure myography data and transmit via UDP over WiFi from ESP32-S3</p>
+          <div class="hidden md:block absolute top-7 -right-2 w-8">
+            <svg class="w-full text-orange-primary/40" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path stroke-dasharray="3 3" d="M0 4h20m-4-4l4 4-4 4"/></svg>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="relative text-center px-4">
+          <div class="w-14 h-14 rounded-full bg-orange-primary/20 border-2 border-orange-primary flex items-center justify-center mx-auto mb-4">
+            <span class="text-xl font-bold text-orange-bold">3</span>
+          </div>
+          <h3 class="font-semibold mb-2">Learn</h3>
+          <p class="text-sm text-text-base/60">LASK5 captures labeled finger positions. Random Forest models train on paired sensor + label data</p>
+          <div class="hidden md:block absolute top-7 -right-2 w-8">
+            <svg class="w-full text-blue-primary/40" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path stroke-dasharray="3 3" d="M0 4h20m-4-4l4 4-4 4"/></svg>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="text-center px-4">
+          <div class="w-14 h-14 rounded-full bg-blue-light/30 border-2 border-blue-primary flex items-center justify-center mx-auto mb-4">
+            <span class="text-xl font-bold text-blue-primary">4</span>
+          </div>
+          <h3 class="font-semibold mb-2">Predict</h3>
+          <p class="text-sm text-text-base/60">ML model predicts individual finger movements in real time from raw pressure readings alone</p>
+        </div>
+      </div>
+
+      <div class="text-center mt-12">
+        <a href="/technology" class="btn-secondary inline-flex items-center gap-2">
+          Deep Dive into the Technology
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Repos -->
+  <section class="bg-bg-cool/50">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="flex items-center justify-between mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold">
+          <span class="text-orange-bold">Explore</span> the Repos
+        </h2>
+        <a href="/repositories" class="text-blue-primary hover:text-blue-bright font-medium inline-flex items-center gap-1 transition-colors">
+          View All
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- FlexGrid -->
+        <a href="https://github.com/Open-Muscle/OpenMuscle-FlexGrid" target="_blank" class="card group block">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors">OpenMuscle-FlexGrid</h3>
+            <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </div>
+          <p class="text-sm text-text-base/60 mb-4">64-sensor (4x16) forearm band with flexible PCB and ESP32-S3. Current flagship hardware.</p>
+          <div class="flex gap-3 text-xs">
+            <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Hardware</span>
+            <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">CERN-OHL-S</span>
+          </div>
+        </a>
+
+        <!-- LASK5 -->
+        <a href="https://github.com/Open-Muscle/OpenMuscle-LASK5" target="_blank" class="card group block">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors">OpenMuscle-LASK5</h3>
+            <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </div>
+          <p class="text-sm text-text-base/60 mb-4">Label Acquiring System K5 &mdash; handheld device for capturing ground-truth finger positions for ML training.</p>
+          <div class="flex gap-3 text-xs">
+            <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Hardware</span>
+            <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">ML Training</span>
+          </div>
+        </a>
+
+        <!-- Software -->
+        <a href="https://github.com/Open-Muscle/OpenMuscle-Software" target="_blank" class="card group block">
+          <div class="flex items-start justify-between mb-3">
+            <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors">OpenMuscle-Software</h3>
+            <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </div>
+          <p class="text-sm text-text-base/60 mb-4">Python & MicroPython codebase for data collection, preprocessing, and Random Forest finger prediction.</p>
+          <div class="flex gap-3 text-xs">
+            <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Python</span>
+            <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">MIT</span>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Origin Story Teaser -->
+  <section class="blueprint-grid">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="relative card bg-white/80 p-8 sm:p-12">
+        <div class="absolute -top-4 left-8 text-6xl text-orange-primary/30 font-serif leading-none">&ldquo;</div>
+
+        <blockquote class="text-xl sm:text-2xl text-text-base/80 leading-relaxed mb-6 pl-4 border-l-4 border-orange-primary">
+          An amputee couldn't take home a prosthetic because of proprietary restrictions.
+          That's when I decided &mdash; this technology needs to be free for everyone.
+        </blockquote>
+
+        <div class="flex items-center gap-4 pl-4">
+          <div>
+            <div class="font-semibold text-text-base">Tory</div>
+            <div class="text-sm text-text-base/50">Founder, OpenMuscle</div>
+          </div>
+        </div>
+
+        <div class="mt-6 pl-4">
+          <a href="/about" class="text-blue-primary hover:text-blue-bright font-medium inline-flex items-center gap-1 transition-colors">
+            Read the full story
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="relative overflow-hidden bg-navy text-text-light">
+    <div class="absolute inset-0 blueprint-grid-dense opacity-30"></div>
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+        Help Us Build the Future of <span class="text-orange-primary">Prosthetics</span>
+      </h2>
+      <p class="text-lg text-text-light/60 max-w-2xl mx-auto mb-8">
+        We need testers, developers, and believers. Whether you can wear a sensor,
+        write Python, or just spread the word &mdash; there's a place for you.
+      </p>
+      <div class="flex flex-wrap justify-center gap-4">
+        <a href="/get-involved" class="btn-primary">
+          Get Involved
+        </a>
+        <a href="https://github.com/Open-Muscle/OpenMuscle-Hub" target="_blank" class="btn-secondary border-text-light/30 text-text-light hover:bg-text-light/10">
+          Star on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!-- Real Sensor Heatmap Script -->
+<script>
+async function initHeroHeatmap() {
+  const canvas = document.getElementById('sensor-heatmap') as HTMLCanvasElement;
+  const playBtn = document.getElementById('hero-play') as HTMLButtonElement;
+  if (!canvas || !playBtn) return;
+
+  const ctx = canvas.getContext('2d')!;
+
+  // Load real FlexGrid-64 data
+  const res = await fetch('/data/flexgrid64_holdout_predictions.json');
+  const data = await res.json();
+  const rows = 4, cols = 16;
+  const nSamples = data.metadata.n_samples;
+
+  // Build frames from real sensor data
+  let globalMin = Infinity, globalMax = -Infinity;
+  const frames: number[][][] = [];
+  for (let s = 0; s < nSamples; s++) {
+    const frame: number[][] = [];
+    for (let r = 0; r < rows; r++) {
+      const row: number[] = [];
+      for (let c = 0; c < cols; c++) {
+        const val = data.sensor_data[`R${r}C${c}`][s];
+        row.push(val);
+        if (val < globalMin) globalMin = val;
+        if (val > globalMax) globalMax = val;
+      }
+      frame.push(row);
+    }
+    frames.push(frame);
+  }
+
+  const cellW = Math.floor((canvas.width - 10) / cols);
+  const cellH = Math.floor((canvas.height - 10) / rows);
+
+  function valueToColor(val: number): string {
+    const t = (val - globalMin) / (globalMax - globalMin || 1);
+    const r = Math.round(111 + (255 - 111) * t);
+    const g = Math.round(190 + (159 - 190) * t);
+    const b = Math.round(230 + (99 - 230) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function drawFrame(idx: number) {
+    const frame = frames[idx];
+    ctx.fillStyle = '#FEF9F5';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const x = 5 + c * cellW;
+        const y = 5 + r * cellH;
+        ctx.fillStyle = valueToColor(frame[r][c]);
+        ctx.beginPath();
+        ctx.roundRect(x, y, cellW - 2, cellH - 2, 3);
+        ctx.fill();
+      }
+    }
+  }
+
+  let playing = false;
+  let frameIdx = 0;
+  let intervalId: number | null = null;
+
+  playBtn.addEventListener('click', () => {
+    if (playing) {
+      if (intervalId) clearInterval(intervalId);
+      intervalId = null;
+      playing = false;
+      playBtn.textContent = 'Play';
+    } else {
+      intervalId = window.setInterval(() => {
+        frameIdx = (frameIdx + 1) % nSamples;
+        drawFrame(frameIdx);
+      }, 50);
+      playing = true;
+      playBtn.textContent = 'Pause';
+    }
+  });
+
+  drawFrame(0);
+}
+
+initHeroHeatmap();
+</script>

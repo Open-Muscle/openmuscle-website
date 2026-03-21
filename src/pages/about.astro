@@ -1,0 +1,117 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const timeline = [
+  { year: "2022", title: "The Beginning", desc: "Tory builds the first OM-12 band with 12 sensors. Open Muscle is born from frustration with proprietary prosthetics. Featured on Hackaday and Adafruit.", color: "orange" },
+  { year: "2023", title: "LASK & Data Collection", desc: "LASK device created for labeled data acquisition. First ML models trained using Random Forest Regressors. Community starts growing.", color: "blue" },
+  { year: "2024", title: "FlexGrid Development", desc: "60-sensor FlexGrid (15x4) designed with flexible PCB and ESP32-S3. LASK5-V3 nears production. VR HID expansion begins.", color: "orange" },
+  { year: "2025", title: "Scaling Up", desc: "Unified software architecture underway. OSHWA certification pursued. New collaborators join including devEco group and C developers.", color: "blue" },
+];
+---
+
+<BaseLayout title="About">
+  <section class="blueprint-grid-dense">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <!-- Origin Story -->
+      <h1 class="text-4xl sm:text-5xl font-bold mb-8">
+        About <span class="text-orange-bold">Open</span><span class="text-blue-primary">Muscle</span>
+      </h1>
+
+      <div class="prose max-w-none mb-20">
+        <div class="card bg-white/80 p-8 sm:p-10 mb-8">
+          <h2 class="text-2xl font-bold mb-4">The Origin Story</h2>
+          <p class="text-text-base/70 leading-relaxed mb-4">
+            OpenMuscle started with a story that Tory couldn't shake: an amputee who was fitted for a prosthetic
+            hand but couldn't take it home because of proprietary restrictions on the technology. The sensors,
+            the software, the control systems &mdash; all locked behind corporate walls.
+          </p>
+          <p class="text-text-base/70 leading-relaxed mb-4">
+            That moment was the catalyst. Tory, a self-taught hardware engineer, decided that prosthetic sensor
+            technology needed to be free. Not free as in "free trial" &mdash; free as in <strong>free for all humanity</strong>,
+            forever, under open licenses that ensure no corporation can ever lock it away again.
+          </p>
+          <p class="text-text-base/70 leading-relaxed">
+            Instead of using expensive EMG sensors that pick up electrical noise, OpenMuscle takes a different approach:
+            <strong>pressure myography</strong>. Simple, affordable pressure sensors detect the physical topology changes
+            of forearm muscles during contraction. Combined with machine learning, this can predict individual finger
+            movements &mdash; the key to controlling a prosthetic hand. And the whole thing costs about $10 in components.
+          </p>
+        </div>
+
+        <!-- Mission -->
+        <div class="card bg-white/80 p-8 sm:p-10 mb-8">
+          <h2 class="text-2xl font-bold mb-4">Our Mission</h2>
+          <p class="text-text-base/70 leading-relaxed">
+            Democratize prosthetic sensor technology. Build affordable, open-source, open-hardware pressure myography
+            sensors that anyone can build, modify, and improve. Every design file, every line of code, every dataset
+            is published openly under MIT (software), CERN-OHL-S v2.0 (hardware), and Creative Commons (documentation) licenses.
+          </p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <h2 class="text-3xl font-bold mb-10">Project <span class="text-blue-primary">Timeline</span></h2>
+
+      <div class="relative">
+        <!-- Vertical line -->
+        <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-blue-light/50 dotted-line-v border-l-0" style="border-left: 2px dotted rgba(111,190,230,0.3);"></div>
+
+        <div class="space-y-10">
+          {timeline.map((item) => (
+            <div class="relative pl-16">
+              <!-- Dot -->
+              <div class={`absolute left-4 top-1 w-5 h-5 rounded-full border-2 ${item.color === 'orange' ? 'bg-orange-light border-orange-primary' : 'bg-blue-light border-blue-primary'}`}></div>
+
+              <div class="card bg-white/80">
+                <div class={`text-sm font-bold mb-1 ${item.color === 'orange' ? 'text-orange-bold' : 'text-blue-primary'}`}>{item.year}</div>
+                <h3 class="text-lg font-semibold mb-2">{item.title}</h3>
+                <p class="text-sm text-text-base/60">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="mt-20">
+        <h2 class="text-3xl font-bold mb-8">Tech <span class="text-orange-bold">Stack</span></h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { label: "ESP32-S3", sub: "Microcontroller" },
+            { label: "MicroPython", sub: "Firmware" },
+            { label: "Python", sub: "ML & Data" },
+            { label: "Random Forest", sub: "ML Model" },
+            { label: "UDP", sub: "Data Transport" },
+            { label: "Flexible PCB", sub: "Sensor Board" },
+            { label: "Hall Effect", sub: "Sensor Type" },
+            { label: "3D Printing", sub: "Enclosures" },
+          ].map((tech) => (
+            <div class="card text-center py-4">
+              <div class="font-semibold text-text-base">{tech.label}</div>
+              <div class="text-xs text-text-base/50 mt-1">{tech.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <!-- Licenses -->
+      <div class="mt-20">
+        <h2 class="text-3xl font-bold mb-8">Licenses</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card bg-white/80 text-center p-6">
+            <div class="text-2xl font-bold text-orange-bold mb-2">MIT</div>
+            <div class="text-sm text-text-base/60">Software & Code</div>
+          </div>
+          <div class="card bg-white/80 text-center p-6">
+            <div class="text-2xl font-bold text-blue-primary mb-2">CERN-OHL-S</div>
+            <div class="text-sm text-text-base/60">Hardware Designs</div>
+          </div>
+          <div class="card bg-white/80 text-center p-6">
+            <div class="text-2xl font-bold text-orange-bold mb-2">CC</div>
+            <div class="text-sm text-text-base/60">Documentation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

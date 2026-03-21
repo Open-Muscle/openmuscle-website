@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+/* ===== OpenMuscle Brand Tokens ===== */
+@theme {
+  --color-orange-primary: #FFBFA3;
+  --color-orange-bold: #FF9F63;
+  --color-orange-light: #FFE0CC;
+  --color-orange-pale: #FFE8DD;
+  --color-blue-primary: #6FBEE6;
+  --color-blue-bright: #70D6FF;
+  --color-blue-light: #BFE8FF;
+  --color-blue-pale: #C2ECFF;
+  --color-bg-warm: #FEF9F5;
+  --color-bg-cool: #F3FEFE;
+  --color-text-base: #2C2C2C;
+  --color-text-light: #FFFFFF;
+  --color-navy: #0f1729;
+}
+
+/* ===== Base Styles ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: var(--color-text-base);
+    background-color: var(--color-bg-warm);
+  }
+  ::selection {
+    background-color: var(--color-orange-light);
+    color: var(--color-text-base);
+  }
+}
+
+/* ===== Engineering Blueprint Grid Background ===== */
+.blueprint-grid {
+  background-image:
+    linear-gradient(rgba(111, 190, 230, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 190, 230, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.blueprint-grid-dense {
+  background-image:
+    linear-gradient(rgba(111, 190, 230, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 190, 230, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(111, 190, 230, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(111, 190, 230, 0.04) 1px, transparent 1px);
+  background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+}
+
+/* ===== Dotted Line Decorations ===== */
+.dotted-line-h {
+  border-top: 2px dotted var(--color-blue-primary);
+}
+.dotted-line-v {
+  border-left: 2px dotted var(--color-blue-primary);
+}
+.solid-line-h {
+  border-top: 2px solid var(--color-orange-primary);
+}
+
+/* ===== Button Styles ===== */
+.btn-primary {
+  background-color: var(--color-orange-primary);
+  color: var(--color-text-base);
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+.btn-primary:hover {
+  background-color: var(--color-orange-bold);
+  border-color: var(--color-blue-primary);
+  border-style: dotted;
+  box-shadow: 0 0 20px rgba(112, 214, 255, 0.2);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-blue-primary);
+  padding: 0.75rem 1.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: 2px solid var(--color-blue-primary);
+}
+.btn-secondary:hover {
+  background-color: rgba(111, 190, 230, 0.1);
+  border-color: var(--color-blue-bright);
+}
+
+/* ===== Card Styles ===== */
+.card {
+  background-color: rgba(194, 236, 255, 0.15);
+  border: 1px solid rgba(111, 190, 230, 0.2);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+.card:hover {
+  background-color: rgba(194, 236, 255, 0.25);
+  border-color: var(--color-orange-primary);
+  box-shadow: 0 4px 24px rgba(255, 191, 163, 0.15);
+}
+
+/* ===== Sensor Animation Canvas ===== */
+.sensor-canvas {
+  border-radius: 1rem;
+  border: 1px solid rgba(111, 190, 230, 0.2);
+  background: linear-gradient(135deg, rgba(254, 249, 245, 0.8), rgba(243, 254, 254, 0.8));
+}
+
+/* ===== Glow Effects ===== */
+.glow-orange {
+  box-shadow: 0 0 30px rgba(255, 159, 99, 0.3);
+}
+.glow-blue {
+  box-shadow: 0 0 30px rgba(112, 214, 255, 0.3);
+}
+
+/* ===== Inter Font ===== */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+}
