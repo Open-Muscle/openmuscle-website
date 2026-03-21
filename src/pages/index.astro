@@ -58,13 +58,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           </div>
         </div>
 
-        <!-- Right: Real Sensor Heatmap -->
-        <div class="flex justify-center">
-          <div class="relative">
-            <canvas id="sensor-heatmap" width="500" height="200" class="sensor-canvas"></canvas>
-            <div class="flex items-center justify-between mt-2 px-1">
-              <div class="text-xs text-text-base/40">Real FlexGrid-64 holdout data (683 samples)</div>
-              <button id="hero-play" class="text-xs px-2 py-1 rounded bg-orange-primary/20 text-orange-bold hover:bg-orange-primary/40 transition-colors">Play</button>
+        <!-- Right: Real-time Finger Prediction Replay -->
+        <div class="flex justify-center w-full">
+          <div class="relative w-full max-w-xl">
+            <!-- 4 finger canvases stacked -->
+            <div class="grid grid-cols-2 gap-3" id="finger-grid">
+              <div class="finger-chart-box">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-text-base">Index</span>
+                  <span class="finger-r2 text-xs text-text-base/40"></span>
+                </div>
+                <canvas class="finger-canvas" data-finger="0" width="280" height="100"></canvas>
+              </div>
+              <div class="finger-chart-box">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-text-base">Middle</span>
+                  <span class="finger-r2 text-xs text-text-base/40"></span>
+                </div>
+                <canvas class="finger-canvas" data-finger="1" width="280" height="100"></canvas>
+              </div>
+              <div class="finger-chart-box">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-text-base">Ring</span>
+                  <span class="finger-r2 text-xs text-text-base/40"></span>
+                </div>
+                <canvas class="finger-canvas" data-finger="2" width="280" height="100"></canvas>
+              </div>
+              <div class="finger-chart-box">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-text-base">Pinky</span>
+                  <span class="finger-r2 text-xs text-text-base/40"></span>
+                </div>
+                <canvas class="finger-canvas" data-finger="3" width="280" height="100"></canvas>
+              </div>
+            </div>
+            <!-- Controls & legend -->
+            <div class="flex items-center justify-between mt-3 px-1">
+              <div class="flex gap-4 text-xs text-text-base/60">
+                <span class="flex items-center gap-1.5">
+                  <span class="inline-block w-4 h-0.5 rounded" style="background:#6FBEE6"></span> Actual (LASK5)
+                </span>
+                <span class="flex items-center gap-1.5">
+                  <span class="inline-block w-4 h-0.5 rounded" style="background:#FF9F63"></span> Predicted (ML)
+                </span>
+              </div>
+              <button id="hero-play" class="text-xs px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold hover:bg-orange-primary/40 transition-colors font-medium">
+                ▶ Play
+              </button>
+            </div>
+            <div class="mt-2 px-1">
+              <p class="text-[10px] text-text-base/35 leading-tight">
+                ⚠ Proof of concept — very small dataset (~683 samples). Results reflect early-stage research under optimal conditions. Larger datasets and hardware revisions are expected to improve accuracy.
+              </p>
             </div>
           </div>
         </div>
@@ -305,88 +350,154 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 
-<!-- Real Sensor Heatmap Script -->
+<!-- Finger Prediction Replay Script -->
 <script>
-async function initHeroHeatmap() {
-  const canvas = document.getElementById('sensor-heatmap') as HTMLCanvasElement;
+async function initFingerReplay() {
   const playBtn = document.getElementById('hero-play') as HTMLButtonElement;
-  if (!canvas || !playBtn) return;
+  const canvases = document.querySelectorAll('.finger-canvas') as NodeListOf<HTMLCanvasElement>;
+  const r2Labels = document.querySelectorAll('.finger-r2') as NodeListOf<HTMLElement>;
+  if (!playBtn || canvases.length === 0) return;
 
-  const ctx = canvas.getContext('2d')!;
-
-  // Load real FlexGrid-64 data
   const res = await fetch('/data/flexgrid64_holdout_predictions.json');
   const data = await res.json();
-  const rows = 4, cols = 16;
-  const nSamples = data.metadata.n_samples;
 
-  // Build frames from real sensor data
-  let globalMin = Infinity, globalMax = -Infinity;
-  const frames: number[][][] = [];
-  for (let s = 0; s < nSamples; s++) {
-    const frame: number[][] = [];
-    for (let r = 0; r < rows; r++) {
-      const row: number[] = [];
-      for (let c = 0; c < cols; c++) {
-        const val = data.sensor_data[`R${r}C${c}`][s];
-        row.push(val);
-        if (val < globalMin) globalMin = val;
-        if (val > globalMax) globalMax = val;
-      }
-      frame.push(row);
+  const fingerNames = ['label_0', 'label_1', 'label_2', 'label_3'];
+  const r2Values = [0.782, 0.783, 0.686, 0.390];
+  const WINDOW = 120; // samples visible at once
+  const nSamples = data.labels['label_0'].length;
+
+  // Colors
+  const actualColor = '#6FBEE6';
+  const predictedColor = '#FF9F63';
+  const gridColor = 'rgba(111,190,230,0.12)';
+  const bgColor = '#FEF9F5';
+
+  // Show R² values
+  r2Labels.forEach((el, i) => {
+    el.textContent = `R² = ${r2Values[i].toFixed(3)}`;
+  });
+
+  // Get actual/predicted arrays per finger
+  const actuals: number[][] = fingerNames.map(k => data.labels[k]);
+  const preds: number[][] = fingerNames.map(k => data.predictions[k]);
+
+  // Find min/max per finger for scaling
+  const mins: number[] = [], maxs: number[] = [];
+  for (let f = 0; f < 4; f++) {
+    let lo = Infinity, hi = -Infinity;
+    for (let i = 0; i < nSamples; i++) {
+      const a = actuals[f][i], p = preds[f][i];
+      if (a < lo) lo = a; if (a > hi) hi = a;
+      if (p < lo) lo = p; if (p > hi) hi = p;
     }
-    frames.push(frame);
+    mins.push(lo); maxs.push(hi);
   }
 
-  const cellW = Math.floor((canvas.width - 10) / cols);
-  const cellH = Math.floor((canvas.height - 10) / rows);
+  function drawFinger(canvas: HTMLCanvasElement, fingerIdx: number, cursor: number) {
+    const ctx = canvas.getContext('2d')!;
+    const w = canvas.width, h = canvas.height;
+    const pad = 4;
+    const plotW = w - pad * 2, plotH = h - pad * 2;
 
-  function valueToColor(val: number): string {
-    const t = (val - globalMin) / (globalMax - globalMin || 1);
-    const r = Math.round(111 + (255 - 111) * t);
-    const g = Math.round(190 + (159 - 190) * t);
-    const b = Math.round(230 + (99 - 230) * t);
-    return `rgb(${r},${g},${b})`;
-  }
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, w, h);
 
-  function drawFrame(idx: number) {
-    const frame = frames[idx];
-    ctx.fillStyle = '#FEF9F5';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        const x = 5 + c * cellW;
-        const y = 5 + r * cellH;
-        ctx.fillStyle = valueToColor(frame[r][c]);
-        ctx.beginPath();
-        ctx.roundRect(x, y, cellW - 2, cellH - 2, 3);
-        ctx.fill();
-      }
+    // Draw subtle grid lines
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const y = pad + (plotH / 4) * i;
+      ctx.beginPath();
+      ctx.moveTo(pad, y);
+      ctx.lineTo(pad + plotW, y);
+      ctx.stroke();
+    }
+
+    const start = Math.max(0, cursor - WINDOW);
+    const end = cursor;
+    const count = end - start;
+    if (count < 2) return;
+
+    const lo = mins[fingerIdx], hi = maxs[fingerIdx];
+    const range = hi - lo || 1;
+
+    function xPos(i: number): number { return pad + ((i - start) / WINDOW) * plotW; }
+    function yPos(val: number): number { return pad + plotH - ((val - lo) / range) * plotH; }
+
+    // Draw actual line
+    ctx.beginPath();
+    ctx.strokeStyle = actualColor;
+    ctx.lineWidth = 2;
+    for (let i = start; i < end; i++) {
+      const x = xPos(i), y = yPos(actuals[fingerIdx][i]);
+      i === start ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw predicted line
+    ctx.beginPath();
+    ctx.strokeStyle = predictedColor;
+    ctx.lineWidth = 2;
+    for (let i = start; i < end; i++) {
+      const x = xPos(i), y = yPos(preds[fingerIdx][i]);
+      i === start ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Draw cursor line
+    if (count > 0) {
+      const cx = xPos(end - 1);
+      ctx.strokeStyle = 'rgba(44,44,44,0.15)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx, pad);
+      ctx.lineTo(cx, pad + plotH);
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
   }
+
+  function drawAll(cursor: number) {
+    canvases.forEach((c) => {
+      const finger = parseInt(c.dataset.finger || '0');
+      drawFinger(c, finger, cursor);
+    });
+  }
+
+  // Draw initial static frame
+  drawAll(WINDOW);
 
   let playing = false;
-  let frameIdx = 0;
-  let intervalId: number | null = null;
+  let cursor = WINDOW;
+  let animId: number | null = null;
+  let lastTime = 0;
+  const SPEED = 40; // ms between samples
+
+  function animate(time: number) {
+    if (time - lastTime >= SPEED) {
+      cursor++;
+      if (cursor > nSamples) cursor = WINDOW; // loop
+      drawAll(cursor);
+      lastTime = time;
+    }
+    animId = requestAnimationFrame(animate);
+  }
 
   playBtn.addEventListener('click', () => {
     if (playing) {
-      if (intervalId) clearInterval(intervalId);
-      intervalId = null;
+      if (animId) cancelAnimationFrame(animId);
+      animId = null;
       playing = false;
-      playBtn.textContent = 'Play';
+      playBtn.innerHTML = '▶ Play';
     } else {
-      intervalId = window.setInterval(() => {
-        frameIdx = (frameIdx + 1) % nSamples;
-        drawFrame(frameIdx);
-      }, 50);
+      lastTime = performance.now();
+      animId = requestAnimationFrame(animate);
       playing = true;
-      playBtn.textContent = 'Pause';
+      playBtn.innerHTML = '⏸ Pause';
     }
   });
-
-  drawFrame(0);
 }
 
-initHeroHeatmap();
+initFingerReplay();
 </script>

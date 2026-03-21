@@ -113,6 +113,19 @@
   background: linear-gradient(135deg, rgba(254, 249, 245, 0.8), rgba(243, 254, 254, 0.8));
 }
 
+/* ===== Finger Prediction Charts ===== */
+.finger-chart-box {
+  background: rgba(254, 249, 245, 0.9);
+  border: 1px solid rgba(111, 190, 230, 0.2);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem 0.5rem;
+}
+.finger-chart-box canvas {
+  width: 100%;
+  height: 80px;
+  border-radius: 0.5rem;
+}
+
 /* ===== Glow Effects ===== */
 .glow-orange {
   box-shadow: 0 0 30px rgba(255, 159, 99, 0.3);
