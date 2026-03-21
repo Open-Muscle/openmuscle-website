@@ -60,6 +60,8 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
 <BaseLayout title="Home">
   <!-- Hero Section -->
   <section class="relative overflow-hidden blueprint-grid-dense">
+    <!-- Background image -->
+    <div class="absolute inset-0 bg-cover bg-center opacity-[0.06]" style="background-image: url('/images/backgrounds/hero-render.png');"></div>
     <!-- Decorative elements -->
     <div class="absolute top-20 left-10 w-32 h-32 rounded-full bg-orange-light/30 blur-3xl"></div>
     <div class="absolute bottom-20 right-10 w-40 h-40 rounded-full bg-blue-light/30 blur-3xl"></div>
@@ -236,8 +238,9 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
   </section>
 
   <!-- How It Works (Brief) -->
-  <section class="blueprint-grid">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+  <section class="relative blueprint-grid overflow-hidden">
+    <div class="absolute inset-0 bg-cover bg-center opacity-[0.05]" style="background-image: url('/images/backgrounds/om12-lask5.png');"></div>
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
       <h2 class="text-3xl sm:text-4xl font-bold text-center mb-16">
         How It <span class="text-blue-primary">Works</span>
       </h2>
@@ -405,6 +408,7 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
 
   <!-- CTA Section -->
   <section class="relative overflow-hidden bg-navy text-text-light">
+    <div class="absolute inset-0 bg-cover bg-center opacity-[0.12]" style="background-image: url('/images/backgrounds/flexgrid-current.png');"></div>
     <div class="absolute inset-0 blueprint-grid-dense opacity-30"></div>
     <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
       <h2 class="text-3xl sm:text-4xl font-bold mb-4">
