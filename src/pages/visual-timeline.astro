@@ -1,0 +1,218 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const timeline = [
+  { id: "01", year: 2022, title: "First 4×1 Piston Sensor Array", desc: "The very first sensor — a 4×1 array with 3D-printed piston sleeves, plastic straws for friction reduction, springs, and Hall effect sensors. Built on a breadboard with an RP2040.", orient: "portrait" },
+  { id: "02", year: 2022, title: "3×3 Hall Sensor Matrix PCB", desc: "A custom 3×3 Hall effect sensor matrix board. R&D to test detecting magnetic fields in a grid layout — a stepping stone toward larger sensor matrices.", orient: "portrait" },
+  { id: "03", year: 2022, title: "2×2 Hall Sensor Device", desc: "Scaled down from 3×3 to 2×2 because the multiplexer was unreliable. Used all 4 ADC pins on the RP2040 directly.", orient: "portrait" },
+  { id: "04", year: 2022, title: "The CELLO Chip — Paper Trace Cutouts", desc: "First custom PCB design, nicknamed the CELLO Chip. Paper cutouts of traces planned a tileable design — designed in Adobe Illustrator before learning proper EDA tools.", orient: "portrait" },
+  { id: "05", year: 2022, title: "CELLO Chip — First Manufactured PCB", desc: "The actual manufactured CELLO Chip with 4 Hall sensors in a 2×2 configuration. The plan was to stack 8 in a row for a forearm bracelet.", orient: "portrait" },
+  { id: "06", year: 2022, title: "First Wearable Bracelet Assembly", desc: "CELLO Chips placed into a 3D-printed bracelet with 5 cells connected by elastic band. The first attempt at making OpenMuscle wearable.", orient: "landscape" },
+  { id: "07", year: 2022, title: "Cylinder Magnet Pistons — Single Cell", desc: "Pivoted to a single stacked 2×2 cell (~4cm tall!) with cylinder magnets on pistons. A magnifying glass with grippers holds the top plate.", orient: "landscape" },
+  { id: "08", year: 2022, title: "The Device That Proved Muscle Detection", desc: "The complete stacked prototype: piston feet, CELLO sensor, RP2040, OLED, and 3 buttons. This device was placed on a forearm and first confirmed that muscle contractions could be detected.", orient: "portrait" },
+  { id: "09", year: 2022, title: "Full Prototype — Exploded View", desc: "Every component disassembled and laid out: 3D-printed housing, aluminum sleeves, nail pistons with magnets, springs, CELLO board, RP2040, OLED, and buttons.", orient: "landscape" },
+  { id: "10", year: 2022, title: "Cloth Bracelet Wearable Test Rig", desc: "The 2×2 stacked prototype mounted onto a cloth bracelet for the first real forearm test. A ridiculous 4cm-tall tower strapped to an arm with cloth.", orient: "portrait" },
+  { id: "11", year: 2022, title: "CELLO Band — Pre-OM-12", desc: "Scaled down to single sensor cells with RP2040 and 3 buttons on a custom PCB. The idea was 4 cells in a slim bracelet. Direct precursor to the OM-12.", orient: "landscape" },
+  { id: "12", year: 2022, title: "4-Cell CELLO Band Connected", desc: "All 4 PCBs connected in 3D-printed housings with slots for cloth. The last step before the 12-sensor OM-12 band.", orient: "landscape" },
+  { id: "13", year: 2022, title: "First OM-12 Assembled", desc: "The first OM-12! 12 sensors with ESP32-S2, clevis pin pistons, and springs that took a month to source. Disassembled D'Addario hand exerciser parts nearby.", orient: "landscape" },
+  { id: "14", year: 2022, title: "LASK4 Prototype — D'Addario Hack", desc: "First LASK4 breadboard PCB with a 3D-printed housing for the D'Addario hand exerciser. Converting a guitar hand strengthener into a finger labeling device.", orient: "landscape" },
+  { id: "15", year: 2022, title: "OM-12 + LASK4 Together — Safety Pins Era", desc: "Both first prototypes side by side on New Year's Eve 2022. Safety pins holding springs, rough 3D prints, PCB version 5.3.0. Pure maker energy.", orient: "landscape" },
+  { id: "16", year: 2023, title: "Two OM-12 Generations + LASK4", desc: "Clean overhead: first OM-12 (safety pins), second OM-12 (circle cap upgrade), and LASK4. Rapid iteration between v1 and v2 in days.", orient: "landscape" },
+  { id: "17", year: 2023, title: "LASK4 Custom PCB Manufacturing", desc: "The LASK4 gets its own custom PCB! 3D-printed mount being printed alongside the black manufactured board. No more breadboard wiring.", orient: "landscape" },
+  { id: "18", year: 2023, title: "LASK4 V2.0 — After Failed V1", desc: "V2 boards arrived after the black V1 PCBs had errors. Stack of spares, working V2 plugged in, failed V1 in background. V1 to V2 in two weeks.", orient: "landscape" },
+  { id: "19", year: 2023, title: "LASK4 V2.0 — Battery Powered", desc: "The final LASK4 V2: battery powered (held on by a rubber band), fully functional. This device captured the first real labeled training data for ML.", orient: "landscape" },
+  { id: "20", year: 2023, title: "LASK4 V2 — Exploded View", desc: "Clean exploded view of every LASK4 V2 component: D'Addario base, custom PCB, 3D-printed bracket, magnet caps, battery, and connectors.", orient: "landscape" },
+  { id: "21", year: 2023, title: "uLabel — Ultimate Robotics Collaboration", desc: "Collaboration with Ultimate Robotics to add a thumb piston. The glued-on thumb mechanism on the D'Addario. Briefly named 'uLabel' before becoming LASK5.", orient: "landscape" },
+  { id: "22", year: 2023, title: "Full Prototype Family Photo", desc: "Every OpenMuscle prototype on one desk: 2×2 stack, CELLO chips, OM-12 V1 and V2, foam experiment, LASK4 variants, and uLabel. Over a year of iteration.", orient: "landscape" },
+  { id: "23", year: 2023, title: "Complete Sensor Evolution Lineup", desc: "Every sensor design built: single cell, 2×2, 4×4 grid, OM-12 foam, OM-12 V1, LASK4 V2, and uLabel. The progression from 1 to 16 to 12 sensors.", orient: "landscape" },
+  { id: "24", year: 2023, title: "uLabel PCB — PCBWay Sponsored", desc: "The uLabel custom PCB, sponsored by PCBWay. Getting a sponsorship was validation that the project had real momentum.", orient: "portrait" },
+  { id: "25", year: 2023, title: "uLabel — All Pieces Laid Out", desc: "Every uLabel component neatly displayed: D'Addario with thumb extension, 3D-printed housing, PCBWay PCB, pistons, springs, and magnet caps.", orient: "portrait" },
+  { id: "26", year: 2024, title: "Keyboard Switches — The Breakthrough", desc: "First experiment with keyboard switches as pressure sensors. Eliminated all custom piston problems in one move. Paired with uMyo EMG bracelet from Ultimate Robotics.", orient: "portrait" },
+  { id: "27", year: 2024, title: "Full Data Collection Setup on Arm", desc: "Both uMyo EMG and keyboard switch OM bands on the forearm, uLabel in the other hand. The complete data collection ecosystem in action.", orient: "portrait" },
+  { id: "28", year: 2024, title: "OM-12 Keyboard Switches — Best Prototype", desc: "The best functioning prototype ever built. Keyboard switches replaced all custom piston mechanisms. Reliable enough for education and long-term use.", orient: "portrait" },
+  { id: "29", year: 2024, title: "Robotic Hand with LASK4 V3 Controller", desc: "A Hiwonder robotic hand controlled by LASK4 V3 PCB. The OpenMuscle vision realized: sensor → ML → prosthetic control, demonstrated in hardware.", orient: "portrait" },
+  { id: "30", year: 2024, title: "LASK5 First Appearance", desc: "The LASK5 arrives — with and without thumb joystick — alongside the OM-12 keyboard switch version. Next generation of finger labeling.", orient: "landscape" },
+  { id: "31", year: 2024, title: "Current Generation Product Layout", desc: "OM-12 Keys + LASK5 arranged cleanly with the assembled bracelet. The polished current-generation OpenMuscle ecosystem.", orient: "landscape" },
+  { id: "32", year: 2025, title: "LASK5 — Professional SMD Manufacturing", desc: "Solder paste stencil alongside LASK5 PCBs. Professional-grade manufacturing — a long way from breadboards and hand-soldered through-hole components.", orient: "landscape" },
+  { id: "33", year: 2025, title: "First FlexGrid — Flexible PCB", desc: "THE FlexGrid: a flexible PCB with 60 sensors in a 15×4 grid, ESP32-S3, just 3mm thick. The revolutionary culmination of 3 years of iteration.", orient: "portrait" },
+];
+
+const years = [2022, 2023, 2024, 2025];
+const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" };
+---
+
+<BaseLayout title="Visual Timeline">
+  <section class="relative blueprint-grid-dense overflow-hidden">
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+      <!-- Page Header -->
+      <div class="text-center mb-16">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-4">
+          <span class="text-orange-bold">4 Years</span> of <span class="text-blue-primary">Building</span>
+        </h1>
+        <p class="text-lg text-text-base/60 max-w-2xl mx-auto">
+          From chopped nails and plastic straws to a 60-sensor flexible PCB.
+          33 milestones in the evolution of open-source pressure myography.
+        </p>
+        <div class="flex justify-center gap-6 mt-6">
+          {years.map(y => (
+            <a href={`#year-${y}`} class={`text-sm font-bold px-4 py-2 rounded-full transition-all hover:scale-105 ${
+              yearColors[y] === 'orange'
+                ? 'bg-orange-light text-orange-bold hover:bg-orange-primary'
+                : 'bg-blue-light text-blue-primary hover:bg-blue-pale'
+            }`}>
+              {y}
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Timeline by Year -->
+      {years.map((year, yi) => {
+        const items = timeline.filter(t => t.year === year);
+        const color = yearColors[year];
+        return (
+          <div id={`year-${year}`} class="mb-20 scroll-mt-24">
+            <!-- Year Header -->
+            <div class="flex items-center gap-4 mb-8">
+              <div class={`text-6xl sm:text-7xl font-black ${
+                color === 'orange' ? 'text-orange-bold' : 'text-blue-primary'
+              }`}>
+                {year}
+              </div>
+              <div class={`flex-1 h-px ${
+                color === 'orange' ? 'bg-orange-primary/40' : 'bg-blue-primary/40'
+              }`}></div>
+              <span class="text-sm text-text-base/40 font-medium">
+                {items.length} milestone{items.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+
+            <!-- Masonry Grid -->
+            <div class="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
+              {items.map((item) => (
+                <button
+                  class="timeline-card block w-full break-inside-avoid rounded-xl overflow-hidden border border-blue-light/30 hover:border-orange-primary transition-all duration-300 hover:shadow-[0_4px_24px_rgba(255,191,163,0.25)] hover:scale-[1.02] cursor-pointer group bg-white"
+                  data-id={item.id}
+                  data-title={item.title}
+                  data-desc={item.desc}
+                  data-year={item.year}
+                >
+                  <div class="relative">
+                    <img
+                      src={`/images/visual-timeline/${item.id}.jpg`}
+                      alt={item.title}
+                      class="w-full h-auto"
+                      loading="lazy"
+                    />
+                    <!-- Gradient overlay -->
+                    <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/70 to-transparent"></div>
+                    <!-- Title -->
+                    <div class="absolute bottom-0 left-0 right-0 p-3">
+                      <div class={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 ${
+                        color === 'orange'
+                          ? 'bg-orange-bold/90 text-white'
+                          : 'bg-blue-primary/90 text-white'
+                      }`}>
+                        #{item.id}
+                      </div>
+                      <h3 class="text-white text-sm font-bold leading-tight drop-shadow-lg">
+                        {item.title}
+                      </h3>
+                    </div>
+                    <!-- Expand icon -->
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div class="bg-white/90 rounded-full p-1.5">
+                        <svg class="w-4 h-4 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      <!-- Summary -->
+      <div class="text-center mt-8 mb-8">
+        <div class="card bg-white/80 p-8 inline-block">
+          <p class="text-text-base/60 text-sm">
+            From a studio apartment in 2022 to a global open-source project.
+            <br />
+            <strong class="text-orange-bold">No patents. No paywalls.</strong>
+            <span class="text-blue-primary font-bold">Open for all humanity.</span>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Lightbox Dialog -->
+  <dialog id="lightbox" class="fixed inset-0 w-full h-full max-w-full max-h-full m-0 p-0 bg-black/90 backdrop:bg-black/90 z-[100]">
+    <div class="flex items-center justify-center w-full h-full p-4 sm:p-8" id="lightbox-backdrop">
+      <div class="relative max-w-4xl w-full max-h-[90vh] flex flex-col">
+        <!-- Close button -->
+        <button id="lightbox-close" class="absolute -top-2 -right-2 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-orange-light transition-colors">
+          <svg class="w-6 h-6 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <!-- Image -->
+        <img id="lightbox-img" class="max-h-[70vh] w-auto mx-auto rounded-xl shadow-2xl object-contain" src="" alt="" />
+        <!-- Caption -->
+        <div class="mt-4 text-center">
+          <div id="lightbox-badge" class="inline-block text-xs font-bold px-3 py-1 rounded-full mb-2 bg-orange-bold text-white"></div>
+          <h2 id="lightbox-title" class="text-white text-xl sm:text-2xl font-bold mb-2"></h2>
+          <p id="lightbox-desc" class="text-white/70 text-sm sm:text-base max-w-2xl mx-auto"></p>
+        </div>
+      </div>
+    </div>
+  </dialog>
+</BaseLayout>
+
+<script>
+  const dialog = document.getElementById('lightbox') as HTMLDialogElement;
+  const img = document.getElementById('lightbox-img') as HTMLImageElement;
+  const title = document.getElementById('lightbox-title')!;
+  const desc = document.getElementById('lightbox-desc')!;
+  const badge = document.getElementById('lightbox-badge')!;
+  const closeBtn = document.getElementById('lightbox-close')!;
+  const backdrop = document.getElementById('lightbox-backdrop')!;
+
+  document.querySelectorAll('.timeline-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const el = card as HTMLElement;
+      const id = el.dataset.id!;
+      img.src = `/images/visual-timeline/${id}.jpg`;
+      img.alt = el.dataset.title!;
+      title.textContent = el.dataset.title!;
+      desc.textContent = el.dataset.desc!;
+      badge.textContent = `#${id} — ${el.dataset.year}`;
+      dialog.showModal();
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  closeBtn.addEventListener('click', () => {
+    dialog.close();
+    document.body.style.overflow = '';
+  });
+
+  backdrop.addEventListener('click', (e) => {
+    if (e.target === backdrop) {
+      dialog.close();
+      document.body.style.overflow = '';
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && dialog.open) {
+      dialog.close();
+      document.body.style.overflow = '';
+    }
+  });
+</script>
