@@ -35,9 +35,9 @@ const timeline = [
   { id: "31", year: 2024, title: "Current Generation Product Layout", desc: "OM-12 Keys + LASK5 arranged cleanly with the assembled bracelet. The polished current-generation OpenMuscle ecosystem.", orient: "landscape" },
   { id: "32", year: 2025, title: "LASK5 — Professional SMD Manufacturing", desc: "Solder paste stencil alongside LASK5 PCBs. Professional-grade manufacturing — a long way from breadboards and hand-soldered through-hole components.", orient: "landscape" },
   { id: "33", year: 2025, title: "First FlexGrid — Flexible PCB", desc: "THE FlexGrid: a flexible PCB with 60 sensors in a 15×4 grid, ESP32-S3, just 3mm thick. The revolutionary culmination of 3 years of iteration.", orient: "portrait" },
-  { id: "34", year: 2025, title: "FlexGrid — First Successful Data Test", desc: "The FlexGrid third prototype successfully reading sensor data for the first time. 60 sensors working together on a flexible circuit board — the design is validated.", orient: "landscape" },
-  { id: "35", year: 2025, title: "Building the Final FlexGrid Prototype", desc: "Tory assembling the final FlexGrid prototype — connecting the flexible PCB sensor strip to the ESP32-S3 controller board. The last build step before it goes on the arm.", orient: "landscape" },
-  { id: "36", year: 2025, title: "FlexGrid + LASK5 — The Dream Realized", desc: "FlexGrid sensor band on the forearm with LASK5 in hand. 60 pressure sensors paired with 5-finger ground-truth labeling. From nails and straws in a studio apartment to this.", orient: "landscape" },
+  { id: "34", year: 2025, title: "FlexGrid — First Successful Data Test", desc: "The FlexGrid third prototype successfully reading sensor data for the first time. 60 sensors working together on a flexible circuit board — the design is validated.", orient: "landscape", ext: "png" },
+  { id: "35", year: 2025, title: "Building the Final FlexGrid Prototype", desc: "Tory assembling the final FlexGrid prototype — connecting the flexible PCB sensor strip to the ESP32-S3 controller board. The last build step before it goes on the arm.", orient: "landscape", ext: "png" },
+  { id: "36", year: 2025, title: "FlexGrid + LASK5 — The Dream Realized", desc: "FlexGrid sensor band on the forearm with LASK5 in hand. 60 pressure sensors paired with 5-finger ground-truth labeling. From nails and straws in a studio apartment to this.", orient: "landscape", ext: "png" },
 ];
 
 const years = [2022, 2023, 2024, 2025];
@@ -97,13 +97,14 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
                 <button
                   class="timeline-card block w-full break-inside-avoid rounded-xl overflow-hidden border border-blue-light/30 hover:border-orange-primary transition-all duration-300 hover:shadow-[0_4px_24px_rgba(255,191,163,0.25)] hover:scale-[1.02] cursor-pointer group bg-white"
                   data-id={item.id}
+                  data-ext={item.ext || 'jpg'}
                   data-title={item.title}
                   data-desc={item.desc}
                   data-year={item.year}
                 >
                   <div class="relative">
                     <img
-                      src={`/images/visual-timeline/${item.id}.jpg`}
+                      src={`/images/visual-timeline/${item.id}.${item.ext || 'jpg'}`}
                       alt={item.title}
                       class="w-full h-auto"
                       loading="lazy"
@@ -190,7 +191,8 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
     card.addEventListener('click', () => {
       const el = card as HTMLElement;
       const id = el.dataset.id!;
-      img.src = `/images/visual-timeline/${id}.jpg`;
+      const ext = el.dataset.ext!;
+      img.src = `/images/visual-timeline/${id}.${ext}`;
       img.alt = el.dataset.title!;
       title.textContent = el.dataset.title!;
       desc.textContent = el.dataset.desc!;
