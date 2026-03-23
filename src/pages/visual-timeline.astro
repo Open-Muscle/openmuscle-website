@@ -166,6 +166,18 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+        <!-- Prev button -->
+        <button id="lightbox-prev" class="absolute left-[-56px] top-1/2 -translate-y-1/2 z-10 bg-white/90 rounded-full p-3 shadow-lg hover:bg-orange-light transition-colors hidden sm:block">
+          <svg class="w-6 h-6 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <!-- Next button -->
+        <button id="lightbox-next" class="absolute right-[-56px] top-1/2 -translate-y-1/2 z-10 bg-white/90 rounded-full p-3 shadow-lg hover:bg-orange-light transition-colors hidden sm:block">
+          <svg class="w-6 h-6 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
         <!-- Image -->
         <img id="lightbox-img" class="max-h-[70vh] w-auto mx-auto rounded-xl shadow-2xl object-contain" src="" alt="" />
         <!-- Caption -->
@@ -173,6 +185,19 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
           <div id="lightbox-badge" class="inline-block text-xs font-bold px-3 py-1 rounded-full mb-2 bg-orange-bold text-white"></div>
           <h2 id="lightbox-title" class="text-white text-xl sm:text-2xl font-bold mb-2"></h2>
           <p id="lightbox-desc" class="text-white/70 text-sm sm:text-base max-w-2xl mx-auto"></p>
+        </div>
+        <!-- Mobile prev/next -->
+        <div class="flex justify-center gap-4 mt-3 sm:hidden">
+          <button id="lightbox-prev-mobile" class="bg-white/90 rounded-full p-3 shadow-lg hover:bg-orange-light transition-colors">
+            <svg class="w-5 h-5 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button id="lightbox-next-mobile" class="bg-white/90 rounded-full p-3 shadow-lg hover:bg-orange-light transition-colors">
+            <svg class="w-5 h-5 text-text-base" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
@@ -187,21 +212,45 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
   const badge = document.getElementById('lightbox-badge')!;
   const closeBtn = document.getElementById('lightbox-close')!;
   const backdrop = document.getElementById('lightbox-backdrop')!;
+  const prevBtn = document.getElementById('lightbox-prev')!;
+  const nextBtn = document.getElementById('lightbox-next')!;
+  const prevBtnMobile = document.getElementById('lightbox-prev-mobile')!;
+  const nextBtnMobile = document.getElementById('lightbox-next-mobile')!;
 
-  document.querySelectorAll('.timeline-card').forEach(card => {
+  const cards = Array.from(document.querySelectorAll('.timeline-card')) as HTMLElement[];
+  let currentIndex = 0;
+
+  function showCard(index: number) {
+    currentIndex = index;
+    const el = cards[index];
+    const id = el.dataset.id!;
+    const ext = el.dataset.ext!;
+    img.src = `/images/visual-timeline/${id}.${ext}`;
+    img.alt = el.dataset.title!;
+    title.textContent = el.dataset.title!;
+    desc.textContent = el.dataset.desc!;
+    badge.textContent = `#${id} — ${el.dataset.year}`;
+  }
+
+  function navigate(direction: number) {
+    const newIndex = currentIndex + direction;
+    if (newIndex >= 0 && newIndex < cards.length) {
+      showCard(newIndex);
+    }
+  }
+
+  cards.forEach((card, i) => {
     card.addEventListener('click', () => {
-      const el = card as HTMLElement;
-      const id = el.dataset.id!;
-      const ext = el.dataset.ext!;
-      img.src = `/images/visual-timeline/${id}.${ext}`;
-      img.alt = el.dataset.title!;
-      title.textContent = el.dataset.title!;
-      desc.textContent = el.dataset.desc!;
-      badge.textContent = `#${id} — ${el.dataset.year}`;
+      showCard(i);
       dialog.showModal();
       document.body.style.overflow = 'hidden';
     });
   });
+
+  prevBtn.addEventListener('click', () => navigate(-1));
+  nextBtn.addEventListener('click', () => navigate(1));
+  prevBtnMobile.addEventListener('click', () => navigate(-1));
+  nextBtnMobile.addEventListener('click', () => navigate(1));
 
   closeBtn.addEventListener('click', () => {
     dialog.close();
@@ -216,9 +265,14 @@ const yearColors = { 2022: "orange", 2023: "blue", 2024: "orange", 2025: "blue" 
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && dialog.open) {
+    if (!dialog.open) return;
+    if (e.key === 'Escape') {
       dialog.close();
       document.body.style.overflow = '';
+    } else if (e.key === 'ArrowLeft') {
+      navigate(-1);
+    } else if (e.key === 'ArrowRight') {
+      navigate(1);
     }
   });
 </script>
