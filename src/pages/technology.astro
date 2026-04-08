@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import SensorHeatmap from '../components/SensorHeatmap.astro';
+import ForearmViz from '../components/ForearmViz.astro';
 import PredictionChart from '../components/PredictionChart.astro';
 import ModelComparison from '../components/ModelComparison.astro';
 ---
@@ -87,13 +87,14 @@ import ModelComparison from '../components/ModelComparison.astro';
   <!-- Live Sensor Data -->
   <section class="py-16 bg-bg-cool">
     <div class="max-w-6xl mx-auto px-4">
-      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Real Sensor Data</h2>
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Real Sensor Data <span class="text-orange-bold">→</span> Finger Prediction</h2>
       <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
-        683 holdout samples from the FlexGrid-64 — data the model never saw during training.
-        Press Play to watch the pressure patterns change in real time.
+        60 pressure sensors wrap around the forearm detecting muscle topology changes.
+        The ML model predicts finger positions in real time from sensor data alone.
+        683 holdout samples — data the model never saw during training.
       </p>
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-light/30">
-        <SensorHeatmap />
+        <ForearmViz />
       </div>
     </div>
   </section>
