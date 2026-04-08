@@ -118,6 +118,10 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
         <!-- Right: Real-time Finger Prediction Replay -->
         <div class="flex justify-center w-full">
           <div class="relative w-full max-w-xl">
+            <!-- Animated hands above charts -->
+            <div class="flex justify-center mb-3">
+              <canvas id="hand-canvas" width="560" height="200" class="w-full max-w-[560px] h-auto rounded-xl" style="background: rgba(254,249,245,0.6);"></canvas>
+            </div>
             <!-- 4 finger canvases stacked -->
             <div class="grid grid-cols-2 gap-3" id="finger-grid">
               <div class="finger-chart-box">
@@ -542,11 +546,220 @@ async function initFingerReplay() {
     }
   }
 
+  // ===== HAND ANIMATION =====
+  const handCanvas = document.getElementById('hand-canvas') as HTMLCanvasElement;
+  const handCtx = handCanvas ? handCanvas.getContext('2d')! : null;
+
+  function drawHand(
+    ctx: CanvasRenderingContext2D,
+    cx: number, palmY: number,
+    fingerValues: number[],
+    color: string, label: string,
+    mirror: boolean
+  ) {
+    const palmW = 70, palmH = 50, palmR = 12;
+    const dir = mirror ? -1 : 1;
+
+    // Label above hand
+    ctx.fillStyle = color;
+    ctx.font = 'bold 11px Inter, system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, cx, palmY - 105);
+
+    // Palm — rounded rect
+    ctx.fillStyle = color + '18';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    const px = cx - palmW / 2, py = palmY;
+    ctx.beginPath();
+    ctx.moveTo(px + palmR, py);
+    ctx.lineTo(px + palmW - palmR, py);
+    ctx.quadraticCurveTo(px + palmW, py, px + palmW, py + palmR);
+    ctx.lineTo(px + palmW, py + palmH - palmR);
+    ctx.quadraticCurveTo(px + palmW, py + palmH, px + palmW - palmR, py + palmH);
+    ctx.lineTo(px + palmR, py + palmH);
+    ctx.quadraticCurveTo(px, py + palmH, px, py + palmH - palmR);
+    ctx.lineTo(px, py + palmR);
+    ctx.quadraticCurveTo(px, py, px + palmR, py);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Wrist lines
+    ctx.strokeStyle = color + '40';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(cx - 15, palmY + palmH);
+    ctx.lineTo(cx - 15, palmY + palmH + 25);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx + 15, palmY + palmH);
+    ctx.lineTo(cx + 15, palmY + palmH + 25);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Finger positions across palm top
+    const fingerSpacing = palmW / 5;
+    const fingerOffsets = [
+      cx - fingerSpacing * 1.5,
+      cx - fingerSpacing * 0.5,
+      cx + fingerSpacing * 0.5,
+      cx + fingerSpacing * 1.5,
+    ];
+    const fingerLengths = [
+      { prox: 28, dist: 20 },  // Index
+      { prox: 32, dist: 22 },  // Middle (longest)
+      { prox: 30, dist: 20 },  // Ring
+      { prox: 24, dist: 16 },  // Pinky (shortest)
+    ];
+    // Base splay angles (slight fan)
+    const baseAngles = [-0.18, -0.06, 0.06, 0.18];
+    const lineW = 3.5;
+
+    for (let f = 0; f < 4; f++) {
+      const val = Math.max(0, Math.min(1, fingerValues[f]));
+      // Curl: 0 = straight up, 1 = curled ~100°
+      const curlAngle = val * 1.75; // radians (~100°)
+      const baseAngle = baseAngles[f] - Math.PI / 2; // start pointing up
+      const fx = fingerOffsets[f];
+      const fy = palmY;
+
+      // Proximal phalanx
+      const proxLen = fingerLengths[f].prox;
+      const proxAngle = baseAngle + curlAngle * 0.5;
+      const proxEndX = fx + Math.cos(proxAngle) * proxLen;
+      const proxEndY = fy + Math.sin(proxAngle) * proxLen;
+
+      // Distal phalanx
+      const distLen = fingerLengths[f].dist;
+      const distAngle = proxAngle + curlAngle * 0.5;
+      const distEndX = proxEndX + Math.cos(distAngle) * distLen;
+      const distEndY = proxEndY + Math.sin(distAngle) * distLen;
+
+      // Draw finger segments
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineW;
+      ctx.lineCap = 'round';
+
+      // Proximal
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(proxEndX, proxEndY);
+      ctx.stroke();
+
+      // Distal
+      ctx.beginPath();
+      ctx.moveTo(proxEndX, proxEndY);
+      ctx.lineTo(distEndX, distEndY);
+      ctx.stroke();
+
+      // Knuckle joint circle (dotted)
+      ctx.strokeStyle = color + '60';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.arc(fx, fy, 3.5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Mid joint circle
+      ctx.strokeStyle = color + '50';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.arc(proxEndX, proxEndY, 3, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Fingertip dot
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(distEndX, distEndY, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Thumb (simplified — slight curl based on average)
+    const thumbVal = (fingerValues[0] + fingerValues[1]) * 0.3;
+    const thumbBaseX = mirror ? cx + palmW / 2 + 2 : cx - palmW / 2 - 2;
+    const thumbBaseY = palmY + 15;
+    const thumbAngle = (mirror ? -0.3 : 0.3) - Math.PI / 2 + thumbVal * 0.8;
+    const thumbMidX = thumbBaseX + Math.cos(thumbAngle) * 20;
+    const thumbMidY = thumbBaseY + Math.sin(thumbAngle) * 20;
+    const thumbTipAngle = thumbAngle + thumbVal * 0.4;
+    const thumbTipX = thumbMidX + Math.cos(thumbTipAngle) * 14;
+    const thumbTipY = thumbMidY + Math.sin(thumbTipAngle) * 14;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineW;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(thumbBaseX, thumbBaseY);
+    ctx.lineTo(thumbMidX, thumbMidY);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(thumbMidX, thumbMidY);
+    ctx.lineTo(thumbTipX, thumbTipY);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(thumbTipX, thumbTipY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawHands(cursor: number) {
+    if (!handCtx) return;
+    const w = handCanvas.width, h = handCanvas.height;
+
+    // Clear
+    handCtx.fillStyle = 'rgba(254,249,245,0.6)';
+    handCtx.fillRect(0, 0, w, h);
+
+    // Subtle blueprint grid
+    handCtx.strokeStyle = 'rgba(111,190,230,0.08)';
+    handCtx.lineWidth = 1;
+    for (let x = 0; x < w; x += 20) {
+      handCtx.beginPath();
+      handCtx.moveTo(x, 0);
+      handCtx.lineTo(x, h);
+      handCtx.stroke();
+    }
+    for (let y = 0; y < h; y += 20) {
+      handCtx.beginPath();
+      handCtx.moveTo(0, y);
+      handCtx.lineTo(w, y);
+      handCtx.stroke();
+    }
+
+    // Get current finger values
+    const idx = Math.min(cursor - 1, nSamples - 1);
+    const actualVals = [actuals[0][idx], actuals[1][idx], actuals[2][idx], actuals[3][idx]];
+    const predVals = [preds[0][idx], preds[1][idx], preds[2][idx], preds[3][idx]];
+
+    // Draw actual hand (left, blue)
+    drawHand(handCtx, w * 0.28, 110, actualVals, actualColor, 'Actual (LASK5)', false);
+
+    // Draw predicted hand (right, orange)
+    drawHand(handCtx, w * 0.72, 110, predVals, predictedColor, 'Predicted (ML)', true);
+
+    // Center divider
+    handCtx.strokeStyle = 'rgba(111,190,230,0.15)';
+    handCtx.lineWidth = 1;
+    handCtx.setLineDash([4, 4]);
+    handCtx.beginPath();
+    handCtx.moveTo(w / 2, 20);
+    handCtx.lineTo(w / 2, h - 10);
+    handCtx.stroke();
+    handCtx.setLineDash([]);
+  }
+
   function drawAll(cursor: number) {
     canvases.forEach((c) => {
       const finger = parseInt(c.dataset.finger || '0');
       drawFinger(c, finger, cursor);
     });
+    drawHands(cursor);
   }
 
   // Draw initial static frame
