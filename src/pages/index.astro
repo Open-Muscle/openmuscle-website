@@ -720,10 +720,10 @@ async function initFingerReplay() {
     drawHands(cursor);
   }
 
-  // Draw initial static frame
+  // Draw initial frame and auto-play
   drawAll(WINDOW);
 
-  let playing = false;
+  let playing = true;
   let cursor = WINDOW;
   let animId: number | null = null;
   let lastTime = 0;
@@ -738,6 +738,11 @@ async function initFingerReplay() {
     }
     animId = requestAnimationFrame(animate);
   }
+
+  // Auto-play on load
+  lastTime = performance.now();
+  animId = requestAnimationFrame(animate);
+  playBtn.innerHTML = '⏸ Pause';
 
   playBtn.addEventListener('click', () => {
     if (playing) {
