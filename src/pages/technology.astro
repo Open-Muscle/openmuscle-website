@@ -34,7 +34,7 @@ import ModelComparison from '../components/ModelComparison.astro';
           <h3 class="text-lg font-semibold text-text-base mb-2">Sense</h3>
           <p class="text-text-base/70">
             Hall-effect sensors in a flexible grid detect pressure changes on the forearm
-            as muscles contract. The FlexGrid-64 uses a 15&times;4 array — 60 sensors
+            as muscles contract. The FlexGrid-60 uses a 15&times;4 array — 60 sensors
             capturing the full pressure distribution.
           </p>
         </div>
@@ -109,10 +109,10 @@ import ModelComparison from '../components/ModelComparison.astro';
       </p>
 
       <div class="space-y-12">
-        <!-- FlexGrid-64 -->
+        <!-- FlexGrid-60 -->
         <div class="bg-bg-warm rounded-2xl p-6 shadow-sm border border-orange-light/50">
           <div class="flex items-center gap-3 mb-4">
-            <span class="px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold text-sm font-semibold">FlexGrid-64</span>
+            <span class="px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold text-sm font-semibold">FlexGrid-60</span>
             <span class="text-text-base/50 text-sm">60 sensors — ExtraTrees — R² = 0.660</span>
           </div>
           <div>
@@ -133,7 +133,7 @@ import ModelComparison from '../components/ModelComparison.astro';
       </div>
 
       <div class="mt-8 p-4 rounded-xl bg-blue-light/20 border border-blue-light/40 text-sm text-text-base/70">
-        <strong class="text-text-base">Why the difference?</strong> The FlexGrid-64 has 5&times; more sensors (60 vs 12)
+        <strong class="text-text-base">Why the difference?</strong> The FlexGrid-60 has 5&times; more sensors (60 vs 12)
         and captures full hand pressure distribution. The OM-12 uses 3 separate SensorBand banks
         with only 4 sensors each — less spatial resolution means less signal for the ML model to work with.
       </div>
@@ -164,7 +164,7 @@ import ModelComparison from '../components/ModelComparison.astro';
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="rounded-2xl border border-orange-light overflow-hidden">
           <div class="p-6 bg-gradient-to-br from-orange-light/30 to-white">
-            <h3 class="text-xl font-bold text-text-base mb-2">FlexGrid-64</h3>
+            <h3 class="text-xl font-bold text-text-base mb-2">FlexGrid-60</h3>
             <p class="text-text-base/70 mb-4">
               4&times;16 hall-effect pressure sensor grid. The current-generation device
               with full hand pressure distribution capture.
