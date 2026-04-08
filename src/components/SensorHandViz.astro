@@ -1,0 +1,261 @@
+---
+/**
+ * 4-card sensor + hand visualization
+ * Top: Actual hand (blue) | Predicted hand (orange)
+ * Bottom: Radial polar sensor view | Hexagonal grid (size + color)
+ */
+---
+
+<div class="sensor-hand-viz">
+  <div class="flex items-center justify-between mb-4">
+    <h3 class="text-lg font-semibold text-text-base">Sensor → ML → Finger Prediction</h3>
+    <div class="flex items-center gap-3 text-sm text-text-base/60">
+      <button id="shv-play" class="px-3 py-1 rounded bg-orange-primary text-white hover:bg-orange-bold transition-colors">⏸ Pause</button>
+      <select id="shv-speed" class="px-2 py-1 rounded border border-blue-light bg-white text-text-base text-sm">
+        <option value="1">1x</option>
+        <option value="2" selected>2x</option>
+        <option value="4">4x</option>
+      </select>
+      <span id="shv-frame" class="font-mono">0 / 0</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Top row: Hands -->
+    <div class="bg-bg-warm/60 rounded-xl border border-blue-light/20 p-3 text-center">
+      <h4 class="text-sm font-bold text-blue-primary mb-2">Actual (LASK5)</h4>
+      <canvas id="shv-hand-actual" width="320" height="240" class="w-full rounded-lg" style="background: rgba(254,249,245,0.4);"></canvas>
+    </div>
+    <div class="bg-bg-warm/60 rounded-xl border border-orange-light/30 p-3 text-center">
+      <h4 class="text-sm font-bold text-orange-bold mb-2">Predicted (ML)</h4>
+      <canvas id="shv-hand-pred" width="320" height="240" class="w-full rounded-lg" style="background: rgba(254,249,245,0.4);"></canvas>
+    </div>
+
+    <!-- Bottom row: Sensors -->
+    <div class="bg-bg-warm/60 rounded-xl border border-blue-light/20 p-3 text-center">
+      <h4 class="text-sm font-bold text-blue-primary mb-2">Radial Polar View</h4>
+      <canvas id="shv-radial" width="400" height="380" class="w-full rounded-lg" style="background: rgba(254,249,245,0.4);"></canvas>
+    </div>
+    <div class="bg-bg-warm/60 rounded-xl border border-orange-light/30 p-3 text-center">
+      <h4 class="text-sm font-bold text-orange-bold mb-2">Hexagonal Grid</h4>
+      <canvas id="shv-hex" width="400" height="380" class="w-full rounded-lg" style="background: rgba(254,249,245,0.4);"></canvas>
+    </div>
+  </div>
+
+  <div class="mt-3 flex items-center gap-2 text-xs text-text-base/50">
+    <span>Low Pressure</span>
+    <div class="flex-1 h-3 rounded" style="background: linear-gradient(to right, #BFE8FF, #6FBEE6, #FF9F63, #FFBFA3);"></div>
+    <span>High Pressure</span>
+  </div>
+</div>
+
+<script>
+async function initSensorHandViz() {
+  const handActualCanvas = document.getElementById('shv-hand-actual') as HTMLCanvasElement;
+  const handPredCanvas = document.getElementById('shv-hand-pred') as HTMLCanvasElement;
+  const radialCanvas = document.getElementById('shv-radial') as HTMLCanvasElement;
+  const hexCanvas = document.getElementById('shv-hex') as HTMLCanvasElement;
+  const playBtn = document.getElementById('shv-play') as HTMLButtonElement;
+  const speedSel = document.getElementById('shv-speed') as HTMLSelectElement;
+  const frameSpan = document.getElementById('shv-frame')!;
+  if (!handActualCanvas || !radialCanvas) return;
+
+  const res = await fetch('/data/flexgrid64_holdout_predictions.json');
+  const data = await res.json();
+  const rows = data.metadata.sensor_layout.rows;
+  const cols = data.metadata.sensor_layout.cols;
+  const nSamples = data.metadata.n_samples;
+
+  // Build sensor frames
+  const frames: number[][][] = [];
+  let gMin = Infinity, gMax = -Infinity;
+  for (let s = 0; s < nSamples; s++) {
+    const frame: number[][] = [];
+    for (let r = 0; r < rows; r++) {
+      const row: number[] = [];
+      for (let c = 0; c < cols; c++) {
+        const val = data.sensor_data[`R${r}C${c}`][s];
+        row.push(val);
+        if (val < gMin) gMin = val;
+        if (val > gMax) gMax = val;
+      }
+      frame.push(row);
+    }
+    frames.push(frame);
+  }
+
+  const fingerNames = ['label_0', 'label_1', 'label_2', 'label_3'];
+  const actuals: number[][] = fingerNames.map(k => data.labels[k]);
+  const preds: number[][] = fingerNames.map(k => data.predictions[k]);
+
+  const actualColor = '#6FBEE6';
+  const predictedColor = '#FF9F63';
+
+  function valToColor(val: number): string {
+    const t = (val - gMin) / (gMax - gMin || 1);
+    return `rgb(${Math.round(111+(255-111)*t)},${Math.round(190+(159-190)*t)},${Math.round(230+(99-230)*t)})`;
+  }
+
+  // ===== HAND (Style C) =====
+  function drawCapsule(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, w1: number, w2: number, fill: string, stroke: string, sw: number) {
+    const dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx+dy*dy);
+    if (len < 1) return;
+    const nx = -dy/len, ny = dx/len;
+    ctx.fillStyle = fill; ctx.strokeStyle = stroke; ctx.lineWidth = sw; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.arc(x1, y1, w1/2, Math.atan2(ny*w1/2, nx*w1/2), Math.atan2(-ny*w1/2, -nx*w1/2));
+    ctx.arc(x2, y2, w2/2, Math.atan2(-ny*w2/2, -nx*w2/2), Math.atan2(ny*w2/2, nx*w2/2));
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  const hPW = 75, hPH = 58;
+  const hFL = [42, 49, 45, 36];
+  const hFW = [16, 16.5, 16, 13.5];
+
+  function drawHand(ctx: CanvasRenderingContext2D, cx: number, palmY: number, vals: number[], color: string) {
+    const fill = color + '15', sw = 2.3;
+    const pL = cx - hPW/2, r = 15;
+    ctx.fillStyle = fill; ctx.strokeStyle = color; ctx.lineWidth = sw;
+    ctx.beginPath();
+    ctx.moveTo(pL+r, palmY); ctx.lineTo(pL+hPW-r, palmY);
+    ctx.arcTo(pL+hPW, palmY, pL+hPW, palmY+r, r);
+    ctx.lineTo(pL+hPW, palmY+hPH-r);
+    ctx.arcTo(pL+hPW, palmY+hPH, pL+hPW-r, palmY+hPH, r);
+    ctx.lineTo(pL+r, palmY+hPH);
+    ctx.arcTo(pL, palmY+hPH, pL, palmY+hPH-r, r);
+    ctx.lineTo(pL, palmY+r);
+    ctx.arcTo(pL, palmY, pL+r, palmY, r);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    const fS = cx - hPW*0.26, fG = hPW*0.21;
+    const fX = [fS, fS+fG, fS+fG*2, fS+fG*3];
+    ctx.strokeStyle = color + '25'; ctx.lineWidth = 1;
+    for (let f = 0; f < 4; f++) { ctx.beginPath(); ctx.moveTo(cx, palmY+hPH*0.7); ctx.lineTo(fX[f], palmY); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(cx-hPW*0.2, palmY+hPH*0.6); ctx.lineTo(pL-2, palmY+hPH*0.28); ctx.stroke();
+
+    for (let f = 0; f < 4; f++) {
+      const val = Math.max(0, Math.min(1, vals[f]));
+      const fl = hFL[f], vl = fl * (0.28 + val * 0.72);
+      const tY = palmY - vl, w = hFW[f], tR = 8;
+      ctx.fillStyle = fill; ctx.strokeStyle = color; ctx.lineWidth = sw;
+      ctx.beginPath();
+      ctx.moveTo(fX[f]-w/2, palmY); ctx.lineTo(fX[f]-w/2, tY+tR);
+      ctx.arcTo(fX[f]-w/2, tY, fX[f], tY, tR);
+      ctx.arcTo(fX[f]+w/2, tY, fX[f]+w/2, tY+tR, tR);
+      ctx.lineTo(fX[f]+w/2, palmY); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = color+'45'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(fX[f], palmY-2); ctx.lineTo(fX[f], tY+5); ctx.stroke();
+      ctx.fillStyle = color+'25'; ctx.strokeStyle = color+'60'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(fX[f], palmY, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      if (vl > 18) { ctx.beginPath(); ctx.arc(fX[f], palmY-vl*0.5, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke(); }
+      ctx.fillStyle = color; ctx.beginPath(); ctx.arc(fX[f], tY+4, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = color+'10'; ctx.lineWidth = 0.7; ctx.setLineDash([3,3]);
+      ctx.strokeRect(fX[f]-w/2-1, palmY-fl, w+2, fl); ctx.setLineDash([]);
+    }
+    const tV = (vals[0]+vals[1])*0.3, tL = 32*(0.45+tV*0.55), tA = -2.07;
+    drawCapsule(ctx, pL-2, palmY+hPH*0.28, pL-2+Math.cos(tA)*tL, palmY+hPH*0.28+Math.sin(tA)*tL, 16, 12, fill, color, sw);
+    ctx.strokeStyle = color+'40'; ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(pL-2, palmY+hPH*0.28); ctx.lineTo(pL-2+Math.cos(tA)*tL, palmY+hPH*0.28+Math.sin(tA)*tL); ctx.stroke();
+    ctx.fillStyle = color+'25'; ctx.strokeStyle = color+'60'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(pL-2, palmY+hPH*0.28, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(pL-2+Math.cos(tA)*tL, palmY+hPH*0.28+Math.sin(tA)*tL, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // ===== RADIAL POLAR =====
+  function drawRadial(ctx: CanvasRenderingContext2D, frame: number[][]) {
+    const W = 400, H = 380, cx = W/2, cy = H/2;
+    const innerR = 40, outerR = 145;
+    const ringW = (outerR - innerR) / rows;
+    const colAngle = (2 * Math.PI) / cols;
+    for (let r = 0; r < rows; r++) {
+      const r1 = innerR + r * ringW, r2 = innerR + (r+1) * ringW;
+      for (let c = 0; c < cols; c++) {
+        const a1 = c*colAngle - Math.PI/2, a2 = (c+1)*colAngle - Math.PI/2;
+        ctx.fillStyle = valToColor(frame[r][c]);
+        ctx.beginPath(); ctx.arc(cx, cy, r2, a1, a2); ctx.arc(cx, cy, r1, a2, a1, true); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 0.5; ctx.stroke();
+      }
+    }
+    ctx.fillStyle = 'rgba(254,249,245,0.85)';
+    ctx.beginPath(); ctx.arc(cx, cy, innerR-2, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = 'rgba(44,44,44,0.5)'; ctx.font = 'bold 11px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Forearm', cx, cy-3); ctx.fillText('Cross-Section', cx, cy+10);
+  }
+
+  // ===== HEXAGONAL GRID =====
+  function drawHexGrid(ctx: CanvasRenderingContext2D, frame: number[][]) {
+    const W = 400, H = 380, cx = W/2, cy = H/2 - 5;
+    const hexMaxR = 16, hexH = hexMaxR * Math.sqrt(3);
+    const startX = cx - (cols/2)*hexMaxR*1.55 + hexMaxR;
+    const startY = cy - (rows/2)*hexH*0.95;
+    function drawHex(x: number, y: number, r: number, color: string) {
+      ctx.fillStyle = color; ctx.beginPath();
+      for (let i = 0; i < 6; i++) { const a = Math.PI/6+(Math.PI/3)*i; i===0 ? ctx.moveTo(x+r*Math.cos(a), y+r*Math.sin(a)) : ctx.lineTo(x+r*Math.cos(a), y+r*Math.sin(a)); }
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1; ctx.stroke();
+    }
+    // Ghost outlines
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const x = startX+c*hexMaxR*1.55+(r%2===1?hexMaxR*0.775:0), y = startY+r*hexH*0.95;
+      ctx.strokeStyle = 'rgba(111,190,230,0.12)'; ctx.lineWidth = 0.5; ctx.beginPath();
+      for (let i = 0; i < 6; i++) { const a = Math.PI/6+(Math.PI/3)*i; i===0 ? ctx.moveTo(x+(hexMaxR-1)*Math.cos(a), y+(hexMaxR-1)*Math.sin(a)) : ctx.lineTo(x+(hexMaxR-1)*Math.cos(a), y+(hexMaxR-1)*Math.sin(a)); }
+      ctx.closePath(); ctx.stroke();
+    }
+    // Filled hex scaled by value
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const x = startX+c*hexMaxR*1.55+(r%2===1?hexMaxR*0.775:0), y = startY+r*hexH*0.95;
+      const t = (frame[r][c]-gMin)/(gMax-gMin||1);
+      drawHex(x, y, (hexMaxR-1)*(0.3+t*0.7), valToColor(frame[r][c]));
+    }
+  }
+
+  // ===== CLEAR CANVAS =====
+  function clear(c: HTMLCanvasElement) {
+    const x = c.getContext('2d')!, W = c.width, H = c.height;
+    x.fillStyle = 'rgba(254,249,245,0.4)'; x.fillRect(0, 0, W, H);
+    x.strokeStyle = 'rgba(111,190,230,0.04)'; x.lineWidth = 1;
+    for (let gx = 0; gx < W; gx += 20) { x.beginPath(); x.moveTo(gx,0); x.lineTo(gx,H); x.stroke(); }
+    for (let gy = 0; gy < H; gy += 20) { x.beginPath(); x.moveTo(0,gy); x.lineTo(W,gy); x.stroke(); }
+  }
+
+  // ===== DRAW ALL =====
+  function drawFrame(idx: number) {
+    const frame = frames[idx];
+    const aV = [actuals[0][idx], actuals[1][idx], actuals[2][idx], actuals[3][idx]];
+    const pV = [preds[0][idx], preds[1][idx], preds[2][idx], preds[3][idx]];
+
+    clear(handActualCanvas);
+    drawHand(handActualCanvas.getContext('2d')!, handActualCanvas.width/2, 115, aV, actualColor);
+
+    clear(handPredCanvas);
+    drawHand(handPredCanvas.getContext('2d')!, handPredCanvas.width/2, 115, pV, predictedColor);
+
+    clear(radialCanvas);
+    drawRadial(radialCanvas.getContext('2d')!, frame);
+
+    clear(hexCanvas);
+    drawHexGrid(hexCanvas.getContext('2d')!, frame);
+
+    frameSpan.textContent = `${idx + 1} / ${nSamples}`;
+  }
+
+  // ===== PLAYBACK =====
+  let playing = true, frameIdx = 0, intervalId: number | null = null;
+  function start() {
+    if (intervalId) clearInterval(intervalId);
+    const speed = parseInt(speedSel.value);
+    intervalId = window.setInterval(() => { frameIdx = (frameIdx+1)%nSamples; drawFrame(frameIdx); }, Math.max(16, Math.round(100/speed)));
+    playing = true; playBtn.textContent = '⏸ Pause';
+  }
+  function stop() {
+    if (intervalId) clearInterval(intervalId); intervalId = null;
+    playing = false; playBtn.textContent = '▶ Play';
+  }
+  playBtn.addEventListener('click', () => { if (playing) stop(); else start(); });
+  speedSel.addEventListener('change', () => { if (playing) start(); });
+
+  drawFrame(0);
+  start();
+}
+document.addEventListener('DOMContentLoaded', initSensorHandViz);
+</script>
