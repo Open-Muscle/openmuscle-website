@@ -120,7 +120,7 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
           <div class="relative w-full max-w-xl">
             <!-- Animated hands above charts -->
             <div class="flex justify-center mb-3">
-              <canvas id="hand-canvas" width="560" height="200" class="w-full max-w-[560px] h-auto rounded-xl" style="background: rgba(254,249,245,0.6);"></canvas>
+              <canvas id="hand-canvas" width="560" height="280" class="w-full max-w-[560px] h-auto rounded-xl" style="background: rgba(254,249,245,0.6);"></canvas>
             </div>
             <!-- 4 finger canvases stacked -->
             <div class="grid grid-cols-2 gap-3" id="finger-grid">
@@ -576,9 +576,9 @@ async function initFingerReplay() {
     ctx.closePath(); ctx.fill(); ctx.stroke();
   }
 
-  const handPalmW = 66, handPalmH = 52;
-  const handFingerFullLens = [38, 44, 40, 32];
-  const handFingerWidths = [14, 14.5, 14, 12];
+  const handPalmW = 92, handPalmH = 73;
+  const handFingerFullLens = [53, 62, 56, 45];
+  const handFingerWidths = [20, 20, 20, 17];
 
   function getHandFingerX(cx: number) {
     const s = cx - handPalmW*0.26, g = handPalmW*0.21;
@@ -598,7 +598,7 @@ async function initFingerReplay() {
     ctx.fillStyle = color; ctx.font = 'bold 12px Inter, system-ui, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(label, cx, palmY - 95);
 
-    drawPalm(ctx, cx, palmY, handPalmW, handPalmH, 14, fillColor, color, sw);
+    drawPalm(ctx, cx, palmY, handPalmW, handPalmH, 20, fillColor, color, sw);
     const fX = getHandFingerX(cx);
     const pLeft = cx - handPalmW/2;
 
@@ -616,7 +616,7 @@ async function initFingerReplay() {
       // val=0 → short/curled, val=1 → tall/extended
       const visLen = fullLen * (0.28 + val * 0.72);
       const topY = palmY - visLen;
-      const w = handFingerWidths[f], tipR = 7;
+      const w = handFingerWidths[f], tipR = 10;
 
       // Chunky finger outline
       ctx.fillStyle = fillColor; ctx.strokeStyle = color; ctx.lineWidth = sw;
@@ -634,13 +634,13 @@ async function initFingerReplay() {
       // Joint circles
       const proxEnd = palmY - visLen * 0.5;
       ctx.fillStyle = color + '25'; ctx.strokeStyle = color + '60'; ctx.lineWidth = 1.3;
-      ctx.beginPath(); ctx.arc(fX[f], palmY, 4.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-      if (visLen > 16) {
-        ctx.beginPath(); ctx.arc(fX[f], proxEnd, 3.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(fX[f], palmY, 6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      if (visLen > 22) {
+        ctx.beginPath(); ctx.arc(fX[f], proxEnd, 5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
       }
       // Fingertip
       ctx.fillStyle = color;
-      ctx.beginPath(); ctx.arc(fX[f], topY + 4, 2.5, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(fX[f], topY + 5, 3.5, 0, Math.PI*2); ctx.fill();
 
       // Ghost outline for full extension
       ctx.strokeStyle = color + '12'; ctx.lineWidth = 0.8;
@@ -651,19 +651,19 @@ async function initFingerReplay() {
 
     // Thumb
     const tVal = (fingerValues[0]+fingerValues[1])*0.3;
-    const tLen = 28*(0.45 + tVal*0.55);
+    const tLen = 39*(0.45 + tVal*0.55);
     const tBaseX = pLeft - 2, tBaseY = palmY + handPalmH*0.28;
     const tAngle = -2.07;
     const tEndX = tBaseX + Math.cos(tAngle)*tLen;
     const tEndY = tBaseY + Math.sin(tAngle)*tLen;
-    drawCapsule(ctx, tBaseX, tBaseY, tEndX, tEndY, 15, 12, fillColor, color, sw);
+    drawCapsule(ctx, tBaseX, tBaseY, tEndX, tEndY, 21, 17, fillColor, color, sw);
     // Thumb bone
     ctx.strokeStyle = color + '40'; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.moveTo(tBaseX, tBaseY); ctx.lineTo(tEndX, tEndY); ctx.stroke();
     ctx.fillStyle = color + '25'; ctx.strokeStyle = color + '60'; ctx.lineWidth = 1.3;
-    ctx.beginPath(); ctx.arc(tBaseX, tBaseY, 4, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(tBaseX, tBaseY, 5.5, 0, Math.PI*2); ctx.fill(); ctx.stroke();
     ctx.fillStyle = color;
-    ctx.beginPath(); ctx.arc(tEndX, tEndY, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(tEndX, tEndY, 3.5, 0, Math.PI*2); ctx.fill();
   }
 
   function drawHands(cursor: number) {
@@ -696,10 +696,10 @@ async function initFingerReplay() {
     const predVals = [preds[0][idx], preds[1][idx], preds[2][idx], preds[3][idx]];
 
     // Draw actual hand (left, blue)
-    drawHand(handCtx, w * 0.28, 110, actualVals, actualColor, 'Actual (LASK5)', false);
+    drawHand(handCtx, w * 0.28, 155, actualVals, actualColor, 'Actual (LASK5)', false);
 
     // Draw predicted hand (right, orange)
-    drawHand(handCtx, w * 0.72, 110, predVals, predictedColor, 'Predicted (ML)', true);
+    drawHand(handCtx, w * 0.72, 155, predVals, predictedColor, 'Predicted (ML)', true);
 
     // Center divider
     handCtx.strokeStyle = 'rgba(111,190,230,0.15)';
