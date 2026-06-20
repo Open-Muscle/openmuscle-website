@@ -75,17 +75,25 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
             Open Source &middot; Open Hardware
           </div>
 
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+          <h1 id="hero-headline" class="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight min-h-[8.5rem] sm:min-h-[11.25rem] lg:min-h-[14rem] transition-opacity duration-500">
             <span class="text-orange-bold">Prosthetic Sensors</span><br />
             <span class="text-text-base">Open for All</span><br />
             <span class="text-blue-primary">Humanity</span>
           </h1>
 
           <p class="text-lg text-text-base/70 max-w-lg leading-relaxed">
-            OpenMuscle is building affordable, open-source pressure myography sensors
-            that predict finger movements using machine learning. No patents. No paywalls.
-            Just technology that belongs to everyone.
+            OpenMuscle builds affordable, open-source pressure myography sensors that read
+            finger movement from the forearm. One signal, three uses: prosthetic control, a
+            human interface device, and training data for humanoid robotics. No patents.
+            No paywalls. Just technology that belongs to everyone.
           </p>
+
+          <!-- Application pills -->
+          <div class="flex flex-wrap gap-2">
+            <span class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold text-sm font-medium">Prosthetic control</span>
+            <span class="px-3 py-1 rounded-full bg-blue-light/40 text-blue-primary text-sm font-medium">Human interface (HID)</span>
+            <a href="/robotics" class="px-3 py-1 rounded-full bg-blue-light/40 text-blue-primary text-sm font-medium hover:bg-blue-light/70 transition-colors">Robotics data &rarr;</a>
+          </div>
 
           <div class="flex flex-wrap gap-4">
             <a href="https://github.com/Open-Muscle/OpenMuscle-Hub" target="_blank" class="btn-primary inline-flex items-center gap-2">
@@ -190,9 +198,9 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
           What is <span class="text-orange-bold">Open</span><span class="text-blue-primary">Muscle</span>?
         </h2>
         <p class="text-lg text-text-base/60 leading-relaxed">
-          An open-source biosensing ecosystem for wearable prosthetic control.
-          We use pressure myography &mdash; not EMG &mdash; to detect muscle contractions
-          and predict individual finger movements in real time.
+          An open-source biosensing ecosystem for wearable prosthetic control, human
+          interface, and robotics data capture. We use pressure myography, not EMG, to
+          detect muscle contractions and predict individual finger movements in real time.
         </p>
       </div>
 
@@ -437,6 +445,43 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
     </div>
   </section>
 </BaseLayout>
+
+<!-- Rotating Hero Headline -->
+<script>
+  (function () {
+    const el = document.getElementById('hero-headline');
+    if (!el) return;
+    // Respect reduced-motion: leave the first headline static.
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const O = 'text-orange-bold', B = 'text-text-base', L = 'text-blue-primary';
+    const line = (cls, txt) => `<span class="${cls}">${txt}</span>`;
+    const phrase = (a, b, c) => [a, b, c].join('<br />');
+
+    // Each headline uses all three colors, one per line (accent / neutral / accent),
+    // so there is a color change at every line break. O = warm/human, L = tech, B = neutral.
+    const phrases = [
+      // Primary: prosthetics (lead + majority)
+      phrase(line(O, 'Prosthetic Sensors'), line(B, 'Open for All'), line(L, 'Humanity')),
+      phrase(line(L, 'A Hand for All,'), line(B, 'Owned by'), line(O, 'Everyone')),
+      phrase(line(O, 'Read the Muscle,'), line(B, 'Predict'), line(L, 'the Hand')),
+      phrase(line(L, 'No Electrodes.'), line(B, 'No Implants.'), line(O, 'Just Pressure')),
+      // Secondary: HID, then robotics
+      phrase(line(O, 'Your Hand Is'), line(B, 'the Open'), line(L, 'Interface')),
+      phrase(line(O, 'Human Hands,'), line(B, 'Teaching'), line(L, 'Robot Hands')),
+    ];
+
+    let i = 0;
+    setInterval(() => {
+      el.style.opacity = '0';
+      setTimeout(() => {
+        i = (i + 1) % phrases.length;
+        el.innerHTML = phrases[i];
+        el.style.opacity = '1';
+      }, 500);
+    }, 4000);
+  })();
+</script>
 
 <!-- Finger Prediction Replay Script -->
 <script>

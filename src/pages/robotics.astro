@@ -1,0 +1,264 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="Robotics"
+  description="OpenMuscle turns human hand demonstrations into open training data for dexterous and humanoid robotics, using VR hand-tracking and HID input devices as ground truth alongside a wearable forearm sensor."
+>
+
+  <!-- Hero -->
+  <section class="relative py-20 bg-gradient-to-b from-bg-warm to-bg-cool overflow-hidden">
+    <div class="absolute inset-0 blueprint-grid opacity-60"></div>
+    <div class="relative max-w-6xl mx-auto px-4 text-center">
+      <span class="inline-block px-3 py-1 rounded-full bg-blue-light/40 text-blue-primary text-sm font-semibold mb-4">Data capture for robotics</span>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        <span class="text-text-base">Human Hands,</span><br />
+        <span class="text-orange-primary">Teaching Robot Hands</span>
+      </h1>
+      <p class="text-lg text-text-base/70 max-w-2xl mx-auto">
+        A person wearing the OpenMuscle band performs an everyday task. The band reads
+        the forearm, and a second device records exactly what the hand did. Every session
+        becomes labeled demonstration data, the kind that trains dexterous and humanoid
+        robot hands.
+      </p>
+    </div>
+  </section>
+
+  <!-- The thesis -->
+  <section class="py-16 bg-white">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-6 text-center">Why forearm sensing makes good robot data</h2>
+      <p class="text-text-base/70 mb-4">
+        Dexterous manipulation models are starved for one thing: large, diverse, labeled
+        recordings of real human hands doing real tasks. Camera rigs and instrumented
+        gloves can capture this, but they are expensive, get in the way of the task, and
+        rarely leave the lab.
+      </p>
+      <p class="text-text-base/70 mb-4">
+        OpenMuscle takes a different route. A flexible band of pressure sensors reads the
+        muscle topology of the forearm while the hand moves freely and unobstructed. Pair
+        that signal with a ground-truth record of what the fingers actually did, and you
+        have a clean training pair: muscle input in, hand pose out. The same mapping that
+        drives a prosthetic hand is the mapping a humanoid robot needs to imitate human
+        dexterity.
+      </p>
+      <p class="text-text-base/70">
+        Because the sensor never blocks the hand, capture can happen during the activity
+        itself: typing, gaming, playing an instrument, manipulating objects. The task
+        provides the labels for free.
+      </p>
+    </div>
+  </section>
+
+  <!-- Maturity disclaimer (matches the honesty of the Technology page) -->
+  <section class="py-6 bg-orange-light/30 border-y border-orange-primary/20">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="text-sm text-text-base/80">
+          <strong class="text-text-base">Where this stands:</strong> OpenMuscle is early-stage,
+          open research, not a finished product. The capture methods below sit at different
+          stages of maturity, marked honestly with each one. The robotics application is the
+          direction we are building toward, and the data we publish along the way is real and
+          free to use today.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The three ground-truth sources -->
+  <section class="py-16 bg-bg-cool">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Three ways to capture ground truth</h2>
+      <p class="text-text-base/60 text-center mb-10 max-w-2xl mx-auto">
+        The sensor band is one half of every training pair. The other half is a record of
+        what the hand truly did. OpenMuscle supports three label sources, each richer than
+        the last.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- LASK5 -->
+        <div class="rounded-2xl border border-orange-light overflow-hidden bg-white">
+          <div class="p-6 bg-gradient-to-br from-orange-light/30 to-white h-full flex flex-col">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full bg-orange-bold/20 text-orange-bold text-xs font-semibold">Live</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-base mb-2">LASK5 actuator wand</h3>
+            <p class="text-text-base/70 text-sm flex-1">
+              A handheld labeling wand drives four linear actuators that the wearer follows.
+              Each actuator position is a precise, repeatable label for one finger. This is
+              the ground truth behind the finger-prediction results on the
+              <a href="/technology" class="text-blue-primary hover:text-orange-bold underline">Technology</a>
+              page.
+            </p>
+            <p class="text-xs text-text-base/50 mt-4">4 degrees of freedom, deterministic.</p>
+          </div>
+        </div>
+
+        <!-- VR hand tracking -->
+        <div class="rounded-2xl border border-blue-light overflow-hidden bg-white">
+          <div class="p-6 bg-gradient-to-br from-blue-light/30 to-white h-full flex flex-col">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full bg-blue-primary/20 text-blue-primary text-xs font-semibold">In development</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-base mb-2">VR hand tracking</h3>
+            <p class="text-text-base/70 text-sm flex-1">
+              A WebXR client uses a Meta Quest 3's onboard hand tracking to record the full
+              articulated hand pose while the wearer moves naturally. Far richer than four
+              actuators, and the model's live prediction is drawn back as a ghost hand
+              overlaid on the real one.
+            </p>
+            <p class="text-xs text-text-base/50 mt-4">Full hand pose, no extra hardware on the hand.</p>
+          </div>
+        </div>
+
+        <!-- HID input -->
+        <div class="rounded-2xl border border-blue-light overflow-hidden bg-white">
+          <div class="p-6 bg-gradient-to-br from-blue-light/30 to-white h-full flex flex-col">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="px-2.5 py-0.5 rounded-full bg-blue-light/60 text-text-base/70 text-xs font-semibold">On the roadmap</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-base mb-2">HID input devices</h3>
+            <p class="text-text-base/70 text-sm flex-1">
+              Standard Human Interface Devices become label tracks. Type on a keyboard, play
+              a game controller, or perform on a MIDI instrument while wearing the band, and
+              every keystroke, button, or note is a timestamped record of finger intent,
+              captured for free during a natural activity.
+            </p>
+            <p class="text-xs text-text-base/50 mt-4">Keyboard, game controller, MIDI (MIDI first).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VR integration deep dive -->
+  <section class="py-16 bg-white">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-3xl font-bold text-text-base">VR integration</h2>
+        <span class="px-3 py-1 rounded-full bg-blue-primary/20 text-blue-primary text-sm font-semibold">In development</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <p class="text-text-base/70 mb-4">
+            Virtual reality headsets ship with high-quality hand tracking built in. OpenMuscle
+            uses it as a ground-truth sensor. The wearer puts on the band and a Quest 3, and a
+            browser-based WebXR client streams the headset's per-joint hand pose to the same
+            pipeline that records the band's pressure data. The two are paired by timestamp
+            into training examples.
+          </p>
+          <p class="text-text-base/70">
+            During inference, the loop runs the other way: the model's prediction renders as a
+            translucent ghost hand floating over your real hand, so you can see where the
+            sensors agree with reality and where they do not. It is a fast, hardware-light way
+            to gather rich, high degree-of-freedom labels and to debug a model in real time.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-blue-light/40 bg-bg-cool p-6">
+          <h4 class="font-semibold text-text-base mb-4">What VR capture adds</h4>
+          <ul class="space-y-3 text-sm text-text-base/70">
+            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Full articulated hand pose instead of four actuator values</li>
+            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Nothing strapped to the hand, so motion stays natural</li>
+            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Live ghost-hand overlay for instant model feedback</li>
+            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Runs in the headset browser, no app install</li>
+          </ul>
+          <p class="text-xs text-text-base/50 mt-5">
+            Built on the WebXR client in
+            <a href="https://github.com/Open-Muscle/OpenMuscle-AR" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">OpenMuscle-AR</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HID deep dive -->
+  <section class="py-16 bg-bg-warm">
+    <div class="max-w-5xl mx-auto px-4">
+      <div class="flex items-center gap-3 mb-6">
+        <h2 class="text-3xl font-bold text-text-base">HID capabilities</h2>
+        <span class="px-3 py-1 rounded-full bg-blue-light/60 text-text-base/70 text-sm font-semibold">On the roadmap</span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="rounded-2xl border border-orange-light/50 bg-white p-6">
+          <h4 class="font-semibold text-text-base mb-4">Input as label</h4>
+          <p class="text-text-base/70 text-sm mb-4">
+            A Human Interface Device already knows, precisely and with timestamps, what your
+            fingers did. OpenMuscle records that stream next to the sensor data so the device
+            does the labeling for you. The person just plays, types, or performs.
+          </p>
+          <ul class="space-y-2 text-sm text-text-base/70">
+            <li class="flex gap-2"><span class="text-orange-bold">&bull;</span> <strong>Keyboard:</strong> each key is a known finger and position</li>
+            <li class="flex gap-2"><span class="text-orange-bold">&bull;</span> <strong>Game controller:</strong> buttons, triggers, and sticks map to finger pressure</li>
+            <li class="flex gap-2"><span class="text-orange-bold">&bull;</span> <strong>MIDI instrument:</strong> notes and velocity give graded, expressive finger motion</li>
+          </ul>
+        </div>
+        <div class="rounded-2xl border border-blue-light/50 bg-white p-6">
+          <h4 class="font-semibold text-text-base mb-4">Output as control</h4>
+          <p class="text-text-base/70 text-sm mb-4">
+            The same pipeline runs in reverse. Once a model can read finger intent from the
+            band, its predictions can act as an input device, driving a cursor, a game, a
+            robot hand, or a humanoid end effector without a physical controller.
+          </p>
+          <p class="text-text-base/70 text-sm">
+            Capture and control share one format, so a model trained from HID labels can later
+            emit HID-style commands. The human teaches by doing; the robot performs by
+            predicting.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- From demonstration to dexterity -->
+  <section class="py-16 bg-bg-cool">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-8 text-center">From demonstration to dexterity</h2>
+      <div class="space-y-6">
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center"><span class="text-sm font-bold text-orange-bold">1</span></div>
+          <div><h4 class="font-semibold text-text-base">Demonstrate</h4><p class="text-text-base/70 text-sm">A person wears the band and performs a task while a label source (LASK5, VR, or HID) records what the hand does.</p></div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center"><span class="text-sm font-bold text-orange-bold">2</span></div>
+          <div><h4 class="font-semibold text-text-base">Pair</h4><p class="text-text-base/70 text-sm">Sensor packets and labels are paired by timestamp into clean training examples: muscle pressure in, hand pose out.</p></div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center"><span class="text-sm font-bold text-orange-bold">3</span></div>
+          <div><h4 class="font-semibold text-text-base">Publish</h4><p class="text-text-base/70 text-sm">Sessions are released as an open dataset under a permissive license, so any lab can train against the same data.</p></div>
+        </div>
+        <div class="flex gap-4">
+          <div class="flex-shrink-0 w-8 h-8 rounded-full bg-orange-primary/20 flex items-center justify-center"><span class="text-sm font-bold text-orange-bold">4</span></div>
+          <div><h4 class="font-semibold text-text-base">Transfer</h4><p class="text-text-base/70 text-sm">Models learned from human demonstration drive prosthetic hands today, and dexterous and humanoid robot hands as the dataset grows.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open dataset CTA -->
+  <section class="py-16 bg-navy text-text-light relative overflow-hidden">
+    <div class="relative max-w-4xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-4">An open dataset, free for robotics research</h2>
+      <p class="text-text-light/70 max-w-2xl mx-auto mb-8">
+        The capture sessions behind this work are published openly under CC BY 4.0. Use them
+        to train, benchmark, or bootstrap your own dexterous-manipulation models. The corpus
+        grows with every new recording.
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="https://github.com/Open-Muscle/OpenMuscle-Dataset" target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center justify-center gap-2">
+          Browse the dataset
+        </a>
+        <a href="/get-involved" class="btn-secondary inline-flex items-center justify-center gap-2">
+          Partner or contribute
+        </a>
+      </div>
+      <p class="text-text-light/40 text-xs mt-6">
+        Building humanoid hardware or manipulation models? We would like to capture data with you.
+      </p>
+    </div>
+  </section>
+
+</BaseLayout>
