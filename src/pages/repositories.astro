@@ -3,13 +3,22 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const repos = [
   { name: "OpenMuscle-Hub", desc: "Central documentation and project hub for the OpenMuscle ecosystem.", tags: ["Docs", "Hub"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Hub" },
-  { name: "OpenMuscle-FlexGrid", desc: "60-sensor (15x4) forearm band with flexible PCB and ESP32-S3. Current flagship hardware.", tags: ["Hardware", "ESP32-S3"], license: "CERN-OHL-S", url: "https://github.com/Open-Muscle/OpenMuscle-FlexGrid" },
+  { name: "OpenMuscle-FlexGrid", desc: "60-sensor (15x4) forearm band: KiCad designs for the flexible sensor sheet and the rigid ESP32-S3 board. V4 is the current board.", tags: ["Hardware", "ESP32-S3"], license: "CERN-OHL-S", url: "https://github.com/Open-Muscle/OpenMuscle-FlexGrid" },
   { name: "OpenMuscle-LASK5", desc: "Label Acquiring System K5 — handheld device for capturing ground-truth finger positions for ML training.", tags: ["Hardware", "ML Training"], license: "CERN-OHL-S", url: "https://github.com/Open-Muscle/OpenMuscle-LASK5" },
-  { name: "OpenMuscle-Software", desc: "Python & MicroPython codebase for data collection, preprocessing, and Random Forest finger prediction.", tags: ["Python", "MicroPython"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Software" },
-  { name: "OpenMuscle-Firmware", desc: "Device firmware for OpenMuscle hardware including ESP32-S3 FlexGrid boards.", tags: ["Firmware", "ESP32"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Firmware" },
+  { name: "OpenMuscle-Software", desc: "The OpenMuscle Studio PC app: finds bands on your Wi-Fi, records with webcam or LASK5 labels, trains finger-prediction models and runs them live. Installers for Windows, macOS and Linux, guides and the kit cheat sheet.", tags: ["Python", "Studio app"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Software" },
+  { name: "FlexGridV4-Firmware", desc: "MicroPython firmware for the FlexGrid V4 band: phone-based Wi-Fi setup, discovery, streaming, the status light and the pre-ship kit check. Release v4.0.0 is what the first kit bands run.", tags: ["MicroPython", "FlexGrid V4"], license: "MIT", url: "https://github.com/Open-Muscle/FlexGridV4-Firmware" },
+  { name: "LASK5-Firmware", desc: "MicroPython firmware for the LASK5 hand labeler, the finger-position source for training data.", tags: ["MicroPython", "LASK5"], license: "MIT", url: "https://github.com/Open-Muscle/LASK5-Firmware" },
+  { name: "OpenMuscle-Firmware", desc: "Superseded: the early shared firmware repository. Current band firmware lives in FlexGridV4-Firmware.", tags: ["Archive", "Firmware"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Firmware" },
   { name: "FlexGridV1-Firmware", desc: "MicroPython firmware specifically for ESP32-S3 FlexGrid V1 hardware.", tags: ["MicroPython", "FlexGrid"], license: "MIT", url: "https://github.com/Open-Muscle/FlexGridV1-Firmware" },
   { name: "OpenMuscle-Band", desc: "Original OM-12 armband with 12 sensors. Legacy MVP that proved the concept.", tags: ["Hardware", "Legacy"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Band" },
   { name: "openmuscle (archived)", desc: "Original repository with early datasets and proof of concept. 47+ stars on GitHub.", tags: ["Archive", "Datasets"], license: "MIT", url: "https://github.com/turfptax/openmuscle" },
+];
+
+const startHere = [
+  { title: "Getting started", desc: "Install the app, give the band your Wi-Fi, record, train and predict. Step by step, about an hour the first time.", url: "https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/getting-started.md" },
+  { title: "Kit cheat sheet (PDF)", desc: "Four pages: what is on the board, what the light means, the recording routine and the training words.", url: "https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/cheat-sheet/openmuscle-kit-cheat-sheet.pdf" },
+  { title: "Band reference", desc: "Every button, light pattern and screen of the FlexGrid V4 band, with a one-page quick card to print.", url: "https://github.com/Open-Muscle/FlexGridV4-Firmware/blob/main/docs/device-reference.md" },
+  { title: "Troubleshooting", desc: "The band is not found, the heatmap is flat, Record will not start, Train is grayed out: what to check.", url: "https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/troubleshooting.md" },
 ];
 ---
 
@@ -24,6 +33,23 @@ const repos = [
           All of our work is open source. Explore the hardware designs, firmware, software, and documentation
           that make up the OpenMuscle ecosystem.
         </p>
+      </div>
+
+      <div class="mb-12 rounded-2xl border border-orange-primary/30 bg-orange-light/30 p-6 sm:p-8">
+        <h2 class="text-2xl font-bold mb-2">Have a FlexGrid V4 band? <span class="text-orange-bold">Start here</span></h2>
+        <p class="text-text-base/60 mb-6 max-w-3xl">
+          Everything a new band needs lives in the repositories: the app installers, a step-by-step first day,
+          and a reference for the band's buttons and lights. Questions go to the GitHub issues of the repository
+          the question is about.
+        </p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {startHere.map((item) => (
+            <a href={item.url} target="_blank" class="card group block">
+              <h3 class="font-semibold group-hover:text-orange-bold transition-colors mb-1">{item.title}</h3>
+              <p class="text-sm text-text-base/60">{item.desc}</p>
+            </a>
+          ))}
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
