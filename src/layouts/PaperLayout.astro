@@ -8,6 +8,7 @@ import path from 'node:path';
 import type { MarkdownLayoutProps } from 'astro';
 import BaseLayout from './BaseLayout.astro';
 import research from '../data/research.json';
+import { buildReportNode } from '../data/report-jsonld';
 
 type Frontmatter = {
   title: string;
@@ -28,9 +29,6 @@ const doiUrl = (v: string) => (v.startsWith('http') ? v : `https://doi.org/${v}`
 const doiLabel = (v: string) => v.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
 
 const site = Astro.site ?? new URL('https://openmuscle.org');
-const origin = site.origin;
-const pageUrl = new URL(Astro.url.pathname, site).href;
-const absolute = (u: string) => new URL(u, site).href;
 
 const pdfLive =
   isSet(research.paperPdf) &&
@@ -39,41 +37,14 @@ const pdfLive =
 const hf = isSet(research.datasetHf) ? research.datasetHf : null;
 const datasetDoi = isSet(research.datasetDoi) ? research.datasetDoi : null;
 const analysisCode = isSet(research.analysisCode) ? research.analysisCode : null;
-const orcid = isSet(research.orcid) ? research.orcid : null;
 
 const { reportVersion, reportDate, sourceRepo, sourcePath, sourceCommit } = frontmatter;
 const commitUrl = `https://github.com/Open-Muscle/${sourceRepo}/commit/${sourceCommit}`;
 
 const contents = (headings ?? []).filter((h) => h.depth === 2);
 
-const c = research.citation;
-const articleNode = {
-  '@type': 'ScholarlyArticle',
-  '@id': `${pageUrl}#article`,
-  headline: c.title,
-  name: `${c.title} (technical report ${reportVersion})`,
-  description: frontmatter.description,
-  url: pageUrl,
-  mainEntityOfPage: pageUrl,
-  inLanguage: 'en',
-  version: reportVersion.replace(/^v/, ''),
-  datePublished: reportDate,
-  isAccessibleForFree: true,
-  author: {
-    '@type': 'Person',
-    ...(orcid && { '@id': orcid, sameAs: orcid }),
-    name: `${c.authorGiven} ${c.authorFamily}`,
-  },
-  publisher: { '@type': 'Organization', '@id': `${origin}/#organization`, name: 'OpenMuscle', url: `${origin}/` },
-  about: { '@id': `${absolute('/research/')}#dataset` },
-  ...(pdfLive && {
-    encoding: {
-      '@type': 'MediaObject',
-      contentUrl: absolute(research.paperPdf),
-      encodingFormat: 'application/pdf',
-    },
-  }),
-};
+// One ScholarlyArticle node for the report, shared with /research/ (src/data/report-jsonld.ts).
+const articleNode = buildReportNode({ site, pdfLive, reportVersion, reportDate });
 ---
 
 <BaseLayout title={frontmatter.title} description={frontmatter.description} jsonLd={articleNode}>

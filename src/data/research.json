@@ -6,6 +6,13 @@
   "paperDoi": "TODO",
   "orcid": "https://orcid.org/0009-0001-8126-247X",
   "analysisCode": "https://github.com/Open-Muscle/OpenMuscle-Software/tree/main/analysis/paper",
+  "datasetCitation": {
+    "type": "misc",
+    "key": "moghadam2026openmusclefmg",
+    "title": "OpenMuscle FMG dataset",
+    "year": 2026,
+    "publisher": "Hugging Face"
+  },
   "citation": {
     "type": "misc",
     "key": "moghadam2026openmuscle",

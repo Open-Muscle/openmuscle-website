@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import research from '../data/research.json';
+import { frontmatter as reportMeta } from './research/paper.md';
+import { buildReportNode, datasetNodeId, reportKeywords, reportNodeId } from '../data/report-jsonld';
 
 // ---------------------------------------------------------------------------
 // All external URLs and the citation text come from src/data/research.json.
@@ -17,7 +19,6 @@ const doiLabel = (v: string) => v.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
 const site = Astro.site ?? new URL('https://openmuscle.org');
 const origin = site.origin;
 const pageUrl = new URL(Astro.url.pathname, site).href;
-const absolute = (u: string) => new URL(u, site).href;
 
 // A site-relative PDF path only counts as live once the file exists in public/.
 // This keeps the paper link hidden until the PDF is dropped in, then it appears
@@ -88,6 +89,43 @@ const paperLinks: LinkCard[] = [
 // ---------------------------------------------------------------------------
 // Facts (from the dataset README and the paper draft)
 // ---------------------------------------------------------------------------
+// The four configs of the Hugging Face dataset, from its dataset card.
+const datasetConfigs = [
+  {
+    name: 'lask5_labeled',
+    isDefault: true,
+    captures: 23,
+    board: 'FlexGrid V3 (20), earlier pre-V4 board not recorded (3)',
+    labels: 'LASK5 handheld labeler, 4 piston targets',
+    recorded: 'May 2026',
+  },
+  {
+    name: 'quest_labeled',
+    isDefault: false,
+    captures: 25,
+    board: 'FlexGrid V4 (14), FlexGrid V3 (11)',
+    labels: 'Meta Quest hand tracking, 25 joints per hand',
+    recorded: 'May to July 2026',
+  },
+  {
+    name: 'legacy_2025',
+    isDefault: false,
+    captures: 13,
+    board: '2025 prototype band',
+    labels: 'LASK5, 4 piston targets, partial coverage',
+    recorded: 'July 2025',
+  },
+  {
+    name: 'supplementary_unlabeled',
+    isDefault: false,
+    captures: 14,
+    board: '2025 prototype band (13), earlier pre-V4 board not recorded (1)',
+    labels: 'None (long unlabeled streams)',
+    recorded: 'July 2025 to May 2026',
+  },
+];
+const totalCaptures = datasetConfigs.reduce((sum, row) => sum + row.captures, 0);
+
 const archiveFolders = [
   { folder: 'flexgrid/', content: 'FlexGrid prototype capture sessions from 2025 (CSV, 60 or 64 pressure cells; the GitHub README labels them V3)' },
   { folder: 'merged/', content: 'Merged multi-session training CSVs produced by the PC pipeline' },
@@ -170,7 +208,7 @@ const takeaways = [
 // Citation (BibTeX and plain text built from research.json)
 // ---------------------------------------------------------------------------
 const c = research.citation;
-const bibtex = [
+const paperBibtex = [
   `@${c.type}{${c.key},`,
   `  author = {${c.authorFamily}, ${c.authorGiven}},`,
   `  title = {{${c.title}}},`,
@@ -179,6 +217,23 @@ const bibtex = [
   paperDoi ? `  doi = {${doiLabel(paperDoi)}},` : `  note = {DOI pending},`,
   `}`,
 ].join('\n');
+const dc = research.datasetCitation;
+const datasetBibtex =
+  hf || datasetDoi
+    ? [
+        `@${dc.type}{${dc.key},`,
+        `  author = {${c.authorFamily}, ${c.authorGiven}},`,
+        `  title = {{${dc.title}}},`,
+        `  year = {${dc.year}},`,
+        `  publisher = {${dc.publisher}},`,
+        datasetDoi ? `  doi = {${doiLabel(datasetDoi)}},` : `  note = {DOI pending},`,
+        hf ? `  url = {${hf}},` : null,
+        `}`,
+      ]
+        .filter(Boolean)
+        .join('\n')
+    : null;
+const bibtex = [paperBibtex, datasetBibtex].filter(Boolean).join('\n\n');
 const plainCitation =
   `${c.authorFamily}, ${c.authorGiven.charAt(0)}. (${c.year}). ${c.title}. ${c.url}` +
   (paperDoi ? ` ${doiUrl(paperDoi)}` : ' (DOI pending)');
@@ -186,15 +241,15 @@ const plainCitation =
 // ---------------------------------------------------------------------------
 // Structured data: schema.org Dataset and ScholarlyArticle
 // ---------------------------------------------------------------------------
-const keywords = ['force myography', 'wearable', 'prosthetics', 'hand pose', 'ESP32'];
+const keywords = reportKeywords;
 const orgRef = {
   '@type': 'Organization',
   '@id': `${origin}/#organization`,
   name: 'OpenMuscle',
   url: `${origin}/`,
 };
-const paperId = `${pageUrl}#paper`;
-const datasetId = `${pageUrl}#dataset`;
+const paperId = reportNodeId(site);
+const datasetId = datasetNodeId(site);
 
 const distribution = [
   github && {
@@ -230,34 +285,14 @@ const datasetNode = {
   citation: { '@id': paperId },
 };
 
-const paperNode = {
-  '@type': 'ScholarlyArticle',
-  '@id': paperId,
-  headline: c.title,
-  name: c.title,
-  description:
-    'Pairs low-cost 60-cell forearm force-myography bracelets with consumer VR hand tracking as an automatic labeler, releases a two-wearer dataset, and reports baselines under a four-rung generalization ladder from random split to across wearers.',
-  url: pdfLive ? absolute(research.paperPdf) : pageUrl,
-  mainEntityOfPage: pageUrl,
-  inLanguage: 'en',
-  keywords,
-  author: {
-    '@type': 'Person',
-    ...(orcid && { '@id': orcid, sameAs: orcid }),
-    name: `${c.authorGiven} ${c.authorFamily}`,
-  },
-  publisher: orgRef,
-  about: { '@id': datasetId },
-  ...(pdfLive && {
-    isAccessibleForFree: true,
-    encoding: {
-      '@type': 'MediaObject',
-      contentUrl: absolute(research.paperPdf),
-      encodingFormat: 'application/pdf',
-    },
-  }),
-  ...(paperDoi && { identifier: doiUrl(paperDoi), sameAs: doiUrl(paperDoi) }),
-};
+// The report has one ScholarlyArticle node, built in src/data/report-jsonld.ts and shared with
+// /research/paper/. The Dataset points at it with citation; the article points back with about.
+const paperNode = buildReportNode({
+  site,
+  pdfLive,
+  reportVersion: reportMeta.reportVersion,
+  reportDate: reportMeta.reportDate,
+});
 ---
 
 <BaseLayout
@@ -364,6 +399,50 @@ const paperNode = {
             </div>
           )
         )}
+      </div>
+
+      <div class="mb-8">
+        <h3 class="text-lg font-semibold text-text-base mb-3">What is in the dataset</h3>
+        <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+          <table class="w-full text-sm text-left">
+            <thead class="bg-blue-light/20 text-text-base">
+              <tr>
+                <th scope="col" class="px-4 py-3 font-semibold">Config</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Captures</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Board</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Labels</th>
+                <th scope="col" class="px-4 py-3 font-semibold">Recorded</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+              {datasetConfigs.map((row) => (
+                <tr>
+                  <td class="px-4 py-3 font-mono text-orange-bold whitespace-nowrap">
+                    {row.name}
+                    {row.isDefault && <span class="block text-xs font-sans text-text-base/50">default</span>}
+                  </td>
+                  <td class="px-4 py-3 font-mono text-text-base">{row.captures}</td>
+                  <td class="px-4 py-3">{row.board}</td>
+                  <td class="px-4 py-3">{row.labels}</td>
+                  <td class="px-4 py-3 whitespace-nowrap">{row.recorded}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-text-base/50 mt-3">{totalCaptures} captures in all.</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+          <div class="p-4 rounded-xl bg-blue-light/20 border border-blue-light/40 text-sm text-text-base/70">
+            <strong class="text-text-base">Wearers:</strong> the dataset codes the two wearers as
+            P01 and P02. The paper calls them W1 and W2.
+          </div>
+          <div class="p-4 rounded-xl bg-orange-light/30 border border-orange-primary/20 text-sm text-text-base/70">
+            <strong class="text-text-base">Splits:</strong> evaluate with a temporal split or
+            leave-one-session-out. Random row splits overstate skill, because neighbouring frames
+            are near-duplicates (see the <a href="#results" class="text-blue-primary hover:text-orange-bold underline">baseline results</a>).
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -568,15 +647,16 @@ const paperNode = {
     <div class="max-w-4xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-text-base mb-6">How to cite</h2>
       <p class="text-text-base/70 mb-6">
-        If you use the dataset, the hardware designs or the results, please cite the paper and
-        credit the OpenMuscle project, as CC BY 4.0 asks.
-        {!paperDoi && ' A DOI is pending and will be added here once it is issued.'}
+        If you use the data, please cite the dataset by its DOI. If you use the results or the
+        hardware designs, cite the paper as well. Either way, credit the OpenMuscle project, as
+        CC BY 4.0 asks.
+        {!paperDoi && ' The paper DOI is pending and will be added here once it is issued.'}
       </p>
 
-      <h3 class="text-lg font-semibold text-text-base mb-2">Plain text</h3>
+      <h3 class="text-lg font-semibold text-text-base mb-2">Plain text (paper)</h3>
       <p class="rounded-xl border border-blue-light/60 bg-white p-4 text-sm text-text-base/80 mb-6">{plainCitation}</p>
 
-      <h3 class="text-lg font-semibold text-text-base mb-2">BibTeX</h3>
+      <h3 class="text-lg font-semibold text-text-base mb-2">BibTeX (paper and dataset)</h3>
       <pre class="rounded-xl border border-blue-light/60 bg-white p-4 text-sm text-text-base/80 overflow-x-auto select-all"><code>{bibtex}</code></pre>
 
       {orcid && (
