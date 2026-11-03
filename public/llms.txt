@@ -1,6 +1,6 @@
 # OpenMuscle
 
-> OpenMuscle is an open-source, open-hardware project that builds affordable forearm pressure-myography (force myography) wearables which predict finger motion with machine learning. The FlexGrid V4 band reads a 15x4 grid of 60 Velostat pressure cells with an ESP32-S3 at roughly 18 to 20 Hz over Wi-Fi UDP, plus a 6-axis IMU. Ground-truth labels come from Meta Quest hand tracking or the LASK5 handheld labeler. Hardware is CERN-OHL-S-2.0, software is MIT, and the dataset is CC BY 4.0.
+> OpenMuscle is an open-source, open-hardware project that builds affordable forearm pressure-myography (force myography) wearables and publishes labeled datasets for researchers in human-machine interfaces, prosthetic sensing and VR interfaces. The prediction targets are continuous finger flexion and extension, per-frame regression targets rather than gesture classes. The FlexGrid V4 band reads a 15x4 grid of 60 Velostat pressure cells with an ESP32-S3 at roughly 18 to 20 Hz over Wi-Fi UDP, plus a 6-axis IMU. Ground-truth labels come from Meta Quest hand tracking or the LASK5 handheld labeler. Hardware is CERN-OHL-S-2.0, software is MIT, and the dataset is CC BY 4.0.
 
 OpenMuscle is early-stage research, not a finished product. The headline result from the paper is a generalization ladder for finger-flexion error (MAE, fraction of full curl): 0.043 with a random split, 0.110 with a temporal split, 0.16 to 0.33 when the band is re-donned in a new session, and 0.27 across wearers. Please cite the paper when using the data or results (see the research page).
 
