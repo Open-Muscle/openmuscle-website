@@ -39,7 +39,7 @@ Facts below come from the project repositories, the website, and the paper draft
 - Repository: https://github.com/Open-Muscle/OpenMuscle-Dataset (license CC BY 4.0, use including commercial use is allowed with attribution to the OpenMuscle project).
 - Layout: `flexgrid/` FlexGrid V3 capture sessions (CSV, 60-sensor pressure matrix); `merged/` merged multi-session training CSVs from the PC pipeline; `curated/` hand-picked good sessions from early capture runs; `legacy/` early prototype captures (txt) from pre-FlexGrid devices.
 - Format: plain text and CSV. A formal schema document is on the roadmap; until then the loader code in `pc/src/openmuscle/data/` in OpenMuscle-Software is the format reference. The software can convert and train from these files (`openmuscle convert`, `openmuscle train`).
-- The repository README is the authoritative statement of what is published today. A Hugging Face mirror and a dataset DOI are planned and are not available yet.
+- The repository README is the authoritative statement of what is published today. The Hugging Face release is live at https://huggingface.co/datasets/openmuscle/openmuscle-fmg (DOI 10.57967/hf/11416), with Parquet files, a dataset card and the Dataset Viewer.
 
 ### The paper's analysis set
 
