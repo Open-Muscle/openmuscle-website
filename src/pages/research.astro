@@ -89,7 +89,7 @@ const paperLinks: LinkCard[] = [
 // Facts (from the dataset README and the paper draft)
 // ---------------------------------------------------------------------------
 const archiveFolders = [
-  { folder: 'flexgrid/', content: 'FlexGrid V3 capture sessions (CSV, 60-sensor pressure matrix)' },
+  { folder: 'flexgrid/', content: 'FlexGrid prototype capture sessions from 2025 (CSV, 60 or 64 pressure cells; the GitHub README labels them V3)' },
   { folder: 'merged/', content: 'Merged multi-session training CSVs produced by the PC pipeline' },
   { folder: 'curated/', content: 'Hand-picked good sessions from early capture runs' },
   { folder: 'legacy/', content: 'Early prototype captures (txt) from pre-FlexGrid devices' },
@@ -98,9 +98,9 @@ const archiveFolders = [
 const deviceFacts = [
   { k: 'Band', v: 'FlexGrid V4, ESP32-S3 controller on a flexible sensor sheet' },
   { k: 'Sensing', v: '15 x 4 grid, 60 Velostat pressure cells, about 12-bit readings' },
-  { k: 'Rate and link', v: 'Roughly 18 to 20 Hz, streamed over Wi-Fi UDP' },
+  { k: 'Rate and link', v: '17 to 19 Hz per band, streamed over Wi-Fi UDP' },
   { k: 'Motion', v: '6-axis IMU on the band' },
-  { k: 'Labels', v: 'Meta Quest hand tracking (25-joint poses) or the LASK5 handheld piston labeler' },
+  { k: 'Labels', v: 'Meta Quest hand tracking (25-joint poses) on V4. The LASK5 handheld piston labeler was used on the earlier V3 band; no V4 recording is LASK5-labeled yet' },
 ];
 
 const analysisSet = [
@@ -136,10 +136,10 @@ const ladder = [
   {
     rung: 'E3',
     protocol: 'Across sessions, same wearer (train on one session, test on another)',
-    mae: '0.16 to 0.33',
-    note: '',
+    mae: '0.24',
+    note: '0.16 and 0.33 by wearer',
     angular: '16 to 42 deg',
-    r2: 'at most 0.36, often below 0',
+    r2: 'at most 0.35, often below 0',
   },
   {
     rung: 'E4',
@@ -154,7 +154,7 @@ const ladder = [
 const takeaways = [
   {
     title: 'Random splits flatter the model about 2.6x',
-    body: 'E1 and E2 use identical data and the same model; only the split differs. At about 19 Hz, neighbouring frames are near-duplicates, so a random split leaks near-copies of test frames into training.',
+    body: 'E1 and E2 use identical data and the same model; only the split differs. At 17 to 19 Hz, neighbouring frames are near-duplicates, so a random split leaks near-copies of test frames into training.',
   },
   {
     title: 'Re-donning the band rivals changing the wearer',
@@ -162,7 +162,7 @@ const takeaways = [
   },
   {
     title: 'Within a session, it is usable today',
-    body: 'About 5 degrees per joint under a random split and about 9 to 13 degrees under a temporal split. That is enough for live per-hand "ghost hand" rendering, from training to prediction in under a minute on consumer hardware.',
+    body: 'About 5 degrees per joint under a random split and about 13 degrees under a temporal split. That is enough for live per-hand "ghost hand" rendering, from training to prediction in under a minute on consumer hardware.',
   },
 ];
 
@@ -327,9 +327,9 @@ const paperNode = {
         </div>
         <div class="text-sm text-text-base/80">
           <strong class="text-text-base">Where this stands:</strong> the paper is a preprint
-          draft and has not been peer reviewed. Its analysis covers two wearers, four sessions
-          and one hardware revision, so conclusions about transfer across wearers are
-          directional, not definitive. The numbers below are reported as they are, including
+          draft and has not been peer reviewed. Its main analysis covers two wearers and four sessions
+          on one hardware revision (FlexGrid V4), with a smaller legacy subset from a single V3 band,
+          so conclusions about transfer across wearers are directional, not definitive. The numbers below are reported as they are, including
           the unflattering ones.
         </div>
       </div>
@@ -368,7 +368,7 @@ const paperNode = {
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
-          <h3 class="text-lg font-semibold text-text-base mb-3">What the public archive holds</h3>
+          <h3 class="text-lg font-semibold text-text-base mb-3">What the GitHub archive holds</h3>
           <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
             <table class="w-full text-sm text-left">
               <thead class="bg-blue-light/20 text-text-base">
@@ -555,7 +555,7 @@ const paperNode = {
         </div>
         <div class="p-4 rounded-xl bg-orange-light/30 border border-orange-primary/20 text-sm text-text-base/70">
           <strong class="text-text-base">Limits:</strong> two wearers, four sessions, one
-          hardware revision. VR hand tracking is itself an estimator, so label noise is reduced
+          hardware revision (FlexGrid V4). VR hand tracking is itself an estimator, so label noise is reduced
           but not eliminated. Flexion is normalized with nominal joint ranges rather than
           per-person calibration.
         </div>

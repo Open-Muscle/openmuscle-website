@@ -79,7 +79,7 @@ const pageNodes = (jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []).ma
 );
 const graph = { '@context': 'https://schema.org', '@graph': [organization, website, ...pageNodes] };
 // Escape "<" so no string value can close the script element early.
-const jsonLdString = JSON.stringify(graph).replace(/</g, '\u003c');
+const jsonLdString = JSON.stringify(graph).replace(/</g, '\\u003c');
 ---
 
 <!DOCTYPE html>
