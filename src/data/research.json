@@ -1,0 +1,18 @@
+{
+  "datasetHf": "TODO",
+  "datasetGithub": "https://github.com/Open-Muscle/OpenMuscle-Dataset",
+  "datasetDoi": "TODO",
+  "paperPdf": "/papers/openmuscle-fmg-dataset-v0.2.pdf",
+  "paperDoi": "TODO",
+  "orcid": "https://orcid.org/0009-0001-8126-247X",
+  "analysisCode": "https://github.com/Open-Muscle/OpenMuscle-Software/tree/main/analysis/paper",
+  "citation": {
+    "type": "misc",
+    "key": "moghadam2026openmuscle",
+    "authorFamily": "Moghadam",
+    "authorGiven": "Tory",
+    "title": "OpenMuscle: Forearm Force-Myography with VR Hand-Tracking Ground Truth: Dataset and Honest Baselines",
+    "year": 2026,
+    "url": "https://openmuscle.org/research"
+  }
+}

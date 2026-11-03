@@ -1,0 +1,557 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import research from '../data/research.json';
+
+// ---------------------------------------------------------------------------
+// All external URLs and the citation text come from src/data/research.json.
+// A value of "TODO" means "not published yet": the link is hidden and the page
+// shows "coming soon" instead, so the site never ships a dead link.
+// ---------------------------------------------------------------------------
+const isSet = (v: unknown): v is string =>
+  typeof v === 'string' && v.trim() !== '' && v.trim() !== 'TODO';
+const doiUrl = (v: string) => (v.startsWith('http') ? v : `https://doi.org/${v}`);
+const doiLabel = (v: string) => v.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
+
+const site = Astro.site ?? new URL('https://openmuscle.org');
+const origin = site.origin;
+const pageUrl = new URL(Astro.url.pathname, site).href;
+const absolute = (u: string) => new URL(u, site).href;
+
+// A site-relative PDF path only counts as live once the file exists in public/.
+// This keeps the paper link hidden until the PDF is dropped in, then it appears
+// on the next build with no further edits.
+const pdfLive =
+  isSet(research.paperPdf) &&
+  (research.paperPdf.startsWith('http') ||
+    fs.existsSync(path.join(process.cwd(), 'public', research.paperPdf)));
+
+const github = isSet(research.datasetGithub) ? research.datasetGithub : null;
+const hf = isSet(research.datasetHf) ? research.datasetHf : null;
+const datasetDoi = isSet(research.datasetDoi) ? research.datasetDoi : null;
+const paperDoi = isSet(research.paperDoi) ? research.paperDoi : null;
+const orcid = isSet(research.orcid) ? research.orcid : null;
+const analysisCode = isSet(research.analysisCode) ? research.analysisCode : null;
+
+type LinkCard = { title: string; desc: string; href: string | null; label?: string };
+
+const datasetLinks: LinkCard[] = [
+  {
+    title: 'GitHub',
+    desc: 'The OpenMuscle-Dataset repository. Plain text and CSV capture sessions, free to clone.',
+    href: github,
+  },
+  {
+    title: 'Hugging Face',
+    desc: 'A hosted copy of the dataset for browsing and loading with standard ML tooling.',
+    href: hf,
+  },
+  {
+    title: 'Dataset DOI',
+    desc: 'A permanent, citable identifier for the dataset.',
+    href: datasetDoi ? doiUrl(datasetDoi) : null,
+    label: datasetDoi ? doiLabel(datasetDoi) : undefined,
+  },
+];
+
+const paperLinks: LinkCard[] = [
+  {
+    title: 'Paper (PDF)',
+    desc: 'The full draft: system, dataset, baselines and limitations.',
+    href: pdfLive ? research.paperPdf : null,
+  },
+  {
+    title: 'Paper DOI',
+    desc: 'A permanent, citable identifier for the paper.',
+    href: paperDoi ? doiUrl(paperDoi) : null,
+    label: paperDoi ? doiLabel(paperDoi) : undefined,
+  },
+  {
+    title: 'Analysis code',
+    desc: 'Scripts that regenerate every number and figure in the paper from the raw captures.',
+    href: analysisCode,
+  },
+  {
+    title: 'Author ORCID',
+    desc: 'Tory Moghadam, author of the paper.',
+    href: orcid,
+    label: orcid ? orcid.replace('https://orcid.org/', '') : undefined,
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Facts (from the dataset README and the paper draft)
+// ---------------------------------------------------------------------------
+const archiveFolders = [
+  { folder: 'flexgrid/', content: 'FlexGrid V3 capture sessions (CSV, 60-sensor pressure matrix)' },
+  { folder: 'merged/', content: 'Merged multi-session training CSVs produced by the PC pipeline' },
+  { folder: 'curated/', content: 'Hand-picked good sessions from early capture runs' },
+  { folder: 'legacy/', content: 'Early prototype captures (txt) from pre-FlexGrid devices' },
+];
+
+const deviceFacts = [
+  { k: 'Band', v: 'FlexGrid V4, ESP32-S3 controller on a flexible sensor sheet' },
+  { k: 'Sensing', v: '15 x 4 grid, 60 Velostat pressure cells, about 12-bit readings' },
+  { k: 'Rate and link', v: 'Roughly 18 to 20 Hz, streamed over Wi-Fi UDP' },
+  { k: 'Motion', v: '6-axis IMU on the band' },
+  { k: 'Labels', v: 'Meta Quest hand tracking (25-joint poses) or the LASK5 handheld piston labeler' },
+];
+
+const analysisSet = [
+  { k: 'Wearers', v: '2' },
+  { k: 'Sessions', v: '4 (8 two-hand captures)' },
+  { k: 'Paired sensor-label frames', v: 'about 22,300 (11,145 left hand, 11,146 right hand)' },
+  { k: 'Targets', v: '15 wrist-relative finger degrees of freedom per hand' },
+];
+
+const licenses = [
+  { k: 'Dataset', v: 'CC BY 4.0' },
+  { k: 'Hardware', v: 'CERN-OHL-S-2.0' },
+  { k: 'Software', v: 'MIT' },
+];
+
+const ladder = [
+  {
+    rung: 'E1',
+    protocol: 'Within one session, random 80/20 split',
+    mae: '0.043',
+    note: '4.9 deg per joint',
+    angular: '4.1 to 6.0 deg',
+    r2: '0.84 to 0.91',
+  },
+  {
+    rung: 'E2',
+    protocol: 'Within one session, temporal split (train on the first 80% of the timeline)',
+    mae: '0.110',
+    note: '12.7 deg per joint',
+    angular: '7.8 to 18.7 deg',
+    r2: '0.21 to 0.77',
+  },
+  {
+    rung: 'E3',
+    protocol: 'Across sessions, same wearer (train on one session, test on another)',
+    mae: '0.16 to 0.33',
+    note: '',
+    angular: '16 to 42 deg',
+    r2: 'at most 0.36, often below 0',
+  },
+  {
+    rung: 'E4',
+    protocol: 'Across wearers (train on all of one wearer, test on the other)',
+    mae: '0.27',
+    note: '',
+    angular: '27 to 32 deg',
+    r2: 'below 0 in every case',
+  },
+];
+
+const takeaways = [
+  {
+    title: 'Random splits flatter the model about 2.6x',
+    body: 'E1 and E2 use identical data and the same model; only the split differs. At about 19 Hz, neighbouring frames are near-duplicates, so a random split leaks near-copies of test frames into training.',
+  },
+  {
+    title: 'Re-donning the band rivals changing the wearer',
+    body: 'Taking the band off and putting it back on the same day cost 0.16 flexion MAE. Five days and a re-donning apart cost 0.25 to 0.42, as bad as or worse than testing on a different wearer (0.27). Band placement is the dominant obstacle.',
+  },
+  {
+    title: 'Within a session, it is usable today',
+    body: 'About 5 degrees per joint under a random split and about 9 to 13 degrees under a temporal split. That is enough for live per-hand "ghost hand" rendering, from training to prediction in under a minute on consumer hardware.',
+  },
+];
+
+// ---------------------------------------------------------------------------
+// Citation (BibTeX and plain text built from research.json)
+// ---------------------------------------------------------------------------
+const c = research.citation;
+const bibtex = [
+  `@${c.type}{${c.key},`,
+  `  author = {${c.authorFamily}, ${c.authorGiven}},`,
+  `  title = {{${c.title}}},`,
+  `  year = {${c.year}},`,
+  `  url = {${c.url}},`,
+  paperDoi ? `  doi = {${doiLabel(paperDoi)}},` : `  note = {DOI pending},`,
+  `}`,
+].join('\n');
+const plainCitation =
+  `${c.authorFamily}, ${c.authorGiven.charAt(0)}. (${c.year}). ${c.title}. ${c.url}` +
+  (paperDoi ? ` ${doiUrl(paperDoi)}` : ' (DOI pending)');
+
+// ---------------------------------------------------------------------------
+// Structured data: schema.org Dataset and ScholarlyArticle
+// ---------------------------------------------------------------------------
+const keywords = ['force myography', 'wearable', 'prosthetics', 'hand pose', 'ESP32'];
+const orgRef = {
+  '@type': 'Organization',
+  '@id': `${origin}/#organization`,
+  name: 'OpenMuscle',
+  url: `${origin}/`,
+};
+const paperId = `${pageUrl}#paper`;
+const datasetId = `${pageUrl}#dataset`;
+
+const distribution = [
+  github && {
+    '@type': 'DataDownload',
+    name: 'OpenMuscle-Dataset on GitHub',
+    encodingFormat: 'text/csv',
+    contentUrl: github,
+  },
+  hf && {
+    '@type': 'DataDownload',
+    name: 'OpenMuscle dataset on Hugging Face',
+    encodingFormat: 'text/csv',
+    contentUrl: hf,
+  },
+].filter(Boolean);
+
+const datasetNode = {
+  '@type': 'Dataset',
+  '@id': datasetId,
+  name: 'OpenMuscle Dataset',
+  description:
+    'Labeled and raw sensor capture sessions from OpenMuscle forearm wearables, published for machine learning research on hand and finger motion. The FlexGrid band reads a 15 x 4 grid of 60 Velostat pressure cells with an ESP32-S3, and ground-truth finger labels come from the LASK5 handheld labeler or from Meta Quest hand tracking. Free to use under CC BY 4.0.',
+  url: pageUrl,
+  license: 'https://creativecommons.org/licenses/by/4.0/',
+  isAccessibleForFree: true,
+  creator: orgRef,
+  keywords,
+  measurementTechnique:
+    'Force myography: pressure distribution over the forearm, paired with ground-truth finger labels from the LASK5 labeler or Meta Quest hand tracking',
+  variableMeasured: ['Pressure readings from 60 forearm cells', 'Finger position labels'],
+  ...(datasetDoi && { identifier: doiUrl(datasetDoi), sameAs: doiUrl(datasetDoi) }),
+  ...(distribution.length > 0 && { distribution }),
+  citation: { '@id': paperId },
+};
+
+const paperNode = {
+  '@type': 'ScholarlyArticle',
+  '@id': paperId,
+  headline: c.title,
+  name: c.title,
+  description:
+    'Pairs low-cost 60-cell forearm force-myography bracelets with consumer VR hand tracking as an automatic labeler, releases a two-wearer dataset, and reports baselines under a four-rung generalization ladder from random split to across wearers.',
+  url: pdfLive ? absolute(research.paperPdf) : pageUrl,
+  mainEntityOfPage: pageUrl,
+  inLanguage: 'en',
+  keywords,
+  author: {
+    '@type': 'Person',
+    ...(orcid && { '@id': orcid, sameAs: orcid }),
+    name: `${c.authorGiven} ${c.authorFamily}`,
+  },
+  publisher: orgRef,
+  about: { '@id': datasetId },
+  ...(pdfLive && {
+    isAccessibleForFree: true,
+    encoding: {
+      '@type': 'MediaObject',
+      contentUrl: absolute(research.paperPdf),
+      encodingFormat: 'application/pdf',
+    },
+  }),
+  ...(paperDoi && { identifier: doiUrl(paperDoi), sameAs: doiUrl(paperDoi) }),
+};
+---
+
+<BaseLayout
+  title="Research and Data"
+  description="OpenMuscle research and data: the open forearm force-myography dataset, the paper, honest baseline results across splits, sessions and wearers, and how to cite."
+  jsonLd={[datasetNode, paperNode]}
+>
+
+  <!-- Hero -->
+  <section class="relative py-20 bg-gradient-to-b from-bg-warm to-bg-cool overflow-hidden">
+    <div class="absolute inset-0 blueprint-grid opacity-60"></div>
+    <div class="relative max-w-6xl mx-auto px-4 text-center">
+      <span class="inline-block px-3 py-1 rounded-full bg-blue-light/40 text-blue-primary text-sm font-semibold mb-4">Research and data</span>
+      <h1 class="text-4xl md:text-5xl font-bold mb-4">
+        <span class="text-orange-primary">Open Data,</span><br />
+        <span class="text-text-base">Honest Baselines</span>
+      </h1>
+      <p class="text-lg text-text-base/70 max-w-2xl mx-auto">
+        OpenMuscle publishes its sensor recordings, its analysis code and a paper that
+        reports how well finger prediction from the forearm really generalizes. Everything
+        is free to use under open licenses.
+      </p>
+      <nav aria-label="On this page" class="mt-8 flex flex-wrap justify-center gap-3 text-sm font-medium">
+        <a href="#dataset" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">Dataset</a>
+        <a href="#paper" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">Paper</a>
+        <a href="#results" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">Baseline results</a>
+        <a href="#cite" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">How to cite</a>
+      </nav>
+    </div>
+  </section>
+
+  <!-- Maturity note -->
+  <section class="py-6 bg-orange-light/30 border-y border-orange-primary/20">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-start gap-3">
+        <div class="flex-shrink-0 mt-0.5">
+          <svg class="w-5 h-5 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="text-sm text-text-base/80">
+          <strong class="text-text-base">Where this stands:</strong> the paper is a preprint
+          draft and has not been peer reviewed. Its analysis covers two wearers, four sessions
+          and one hardware revision, so conclusions about transfer across wearers are
+          directional, not definitive. The numbers below are reported as they are, including
+          the unflattering ones.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dataset -->
+  <section id="dataset" class="py-16 bg-white scroll-mt-20">
+    <div class="max-w-5xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-6">The dataset</h2>
+      <p class="text-text-base/70 mb-4 max-w-3xl">
+        Labeled and raw sensor capture sessions from OpenMuscle wearables, published for
+        machine learning research on hand and forearm biomechanics. The data is free to use,
+        including commercially, under
+        <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">CC BY 4.0</a>
+        with attribution to the OpenMuscle project. It grows as new sessions are recorded.
+      </p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
+        {datasetLinks.map((item) =>
+          item.href ? (
+            <a href={item.href} target="_blank" rel="noopener noreferrer" class="card group block">
+              <h3 class="font-semibold group-hover:text-orange-bold transition-colors mb-1">{item.title}</h3>
+              <p class="text-sm text-text-base/60 mb-2">{item.desc}</p>
+              {item.label && <p class="text-xs font-mono text-blue-primary break-all">{item.label}</p>}
+            </a>
+          ) : (
+            <div class="rounded-xl border border-dashed border-blue-primary/40 bg-white/60 p-6">
+              <h3 class="font-semibold text-text-base/70 mb-1">{item.title}</h3>
+              <p class="text-sm text-text-base/50 mb-2">{item.desc}</p>
+              <p class="text-xs font-semibold text-orange-bold">Coming soon</p>
+            </div>
+          )
+        )}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold text-text-base mb-3">What the public archive holds</h3>
+          <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-blue-light/20 text-text-base">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-semibold">Folder</th>
+                  <th scope="col" class="px-4 py-3 font-semibold">Contents</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+                {archiveFolders.map((row) => (
+                  <tr>
+                    <td class="px-4 py-3 font-mono text-orange-bold whitespace-nowrap">{row.folder}</td>
+                    <td class="px-4 py-3">{row.content}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-text-base/50 mt-3">
+            The repository README is the authoritative description of what is published today.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-text-base mb-3">Device and signal (as used in the paper)</h3>
+          <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+            <table class="w-full text-sm text-left">
+              <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+                {deviceFacts.map((row) => (
+                  <tr>
+                    <th scope="row" class="px-4 py-3 font-semibold text-text-base whitespace-nowrap align-top">{row.k}</th>
+                    <td class="px-4 py-3">{row.v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+        <div>
+          <h3 class="text-lg font-semibold text-text-base mb-3">The paper's analysis set</h3>
+          <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+            <table class="w-full text-sm text-left">
+              <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+                {analysisSet.map((row) => (
+                  <tr>
+                    <th scope="row" class="px-4 py-3 font-semibold text-text-base align-top">{row.k}</th>
+                    <td class="px-4 py-3">{row.v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-semibold text-text-base mb-3">Licenses</h3>
+          <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+            <table class="w-full text-sm text-left">
+              <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+                {licenses.map((row) => (
+                  <tr>
+                    <th scope="row" class="px-4 py-3 font-semibold text-text-base">{row.k}</th>
+                    <td class="px-4 py-3 font-mono">{row.v}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paper -->
+  <section id="paper" class="py-16 bg-bg-cool scroll-mt-20">
+    <div class="max-w-5xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-6">The paper</h2>
+      <div class="rounded-2xl border border-blue-light bg-white p-6 sm:p-8 mb-8">
+        <p class="text-xs font-semibold uppercase tracking-wide text-orange-bold mb-2">Preprint draft</p>
+        <h3 class="text-xl font-bold text-text-base mb-2">{c.title}</h3>
+        <p class="text-sm text-text-base/60 mb-4">
+          {c.authorGiven} {c.authorFamily}, OpenMuscle, {c.year}
+        </p>
+        <p class="text-text-base/70 mb-4">
+          The paper presents an end-to-end open system that pairs low-cost 60-cell forearm
+          force-myography bracelets with consumer VR hand tracking as an automatic ground-truth
+          labeler. It releases a first two-wearer dataset and reports baselines under a
+          four-rung generalization ladder, from a random split within a session up to
+          prediction across wearers.
+        </p>
+        <p class="text-text-base/70">
+          Every number and figure regenerates from the raw captures with
+          <code class="px-1.5 py-0.5 rounded bg-blue-light/30 text-sm">analysis/paper/analyze.py</code>
+          and <code class="px-1.5 py-0.5 rounded bg-blue-light/30 text-sm">figures.py</code>.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {paperLinks.map((item) =>
+          item.href ? (
+            <a
+              href={item.href}
+              target={item.href.startsWith('http') ? '_blank' : undefined}
+              rel={item.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              class="card group block"
+            >
+              <h3 class="font-semibold group-hover:text-orange-bold transition-colors mb-1">{item.title}</h3>
+              <p class="text-sm text-text-base/60 mb-2">{item.desc}</p>
+              {item.label && <p class="text-xs font-mono text-blue-primary break-all">{item.label}</p>}
+            </a>
+          ) : (
+            <div class="rounded-xl border border-dashed border-blue-primary/40 bg-white/60 p-6">
+              <h3 class="font-semibold text-text-base/70 mb-1">{item.title}</h3>
+              <p class="text-sm text-text-base/50 mb-2">{item.desc}</p>
+              <p class="text-xs font-semibold text-orange-bold">Coming soon</p>
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  </section>
+
+  <!-- Baseline results -->
+  <section id="results" class="py-16 bg-white scroll-mt-20">
+    <div class="max-w-5xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2">Baseline results: the generalization ladder</h2>
+      <p class="text-text-base/70 mb-8 max-w-3xl">
+        One deliberately simple model, evaluated four ways. The same model family scores very
+        differently depending on how hard the test is, which is why every rung is reported.
+        Error is the mean finger-flexion MAE as a fraction of full curl, averaged over sessions
+        and both hands. Lower is better.
+      </p>
+
+      <div class="overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-blue-light/20 text-text-base">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-semibold">Rung</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Protocol</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Flexion MAE</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Joint angle MAE</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Typical flexion R&sup2;</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+            {ladder.map((row) => (
+              <tr>
+                <td class="px-4 py-3 font-mono font-bold text-orange-bold">{row.rung}</td>
+                <td class="px-4 py-3">{row.protocol}</td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="font-mono font-bold text-text-base">{row.mae}</span>
+                  {row.note && <span class="block text-xs text-text-base/50">{row.note}</span>}
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">{row.angular}</td>
+                <td class="px-4 py-3">{row.r2}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        {takeaways.map((item, i) => (
+          <div class="rounded-2xl border border-blue-light bg-blue-light/10 p-6">
+            <div class="w-10 h-10 rounded-full bg-orange-primary/20 flex items-center justify-center mb-3">
+              <span class="text-lg font-bold text-orange-bold">{i + 1}</span>
+            </div>
+            <h3 class="font-semibold text-text-base mb-2">{item.title}</h3>
+            <p class="text-sm text-text-base/70">{item.body}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        <div class="p-4 rounded-xl bg-blue-light/20 border border-blue-light/40 text-sm text-text-base/70">
+          <strong class="text-text-base">The model:</strong> one random forest (100 trees) per
+          hand per condition, mapping the 60 raw cell values of a single frame to 15
+          wrist-relative finger targets. No temporal context, calibration or normalization. It
+          is a floor, chosen so that differences between protocols cannot be blamed on model
+          capacity. Temporal models and per-session calibration are the obvious next experiments.
+        </div>
+        <div class="p-4 rounded-xl bg-orange-light/30 border border-orange-primary/20 text-sm text-text-base/70">
+          <strong class="text-text-base">Limits:</strong> two wearers, four sessions, one
+          hardware revision. VR hand tracking is itself an estimator, so label noise is reduced
+          but not eliminated. Flexion is normalized with nominal joint ranges rather than
+          per-person calibration.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to cite -->
+  <section id="cite" class="py-16 bg-bg-warm scroll-mt-20">
+    <div class="max-w-4xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-6">How to cite</h2>
+      <p class="text-text-base/70 mb-6">
+        If you use the dataset, the hardware designs or the results, please cite the paper and
+        credit the OpenMuscle project, as CC BY 4.0 asks.
+        {!paperDoi && ' A DOI is pending and will be added here once it is issued.'}
+      </p>
+
+      <h3 class="text-lg font-semibold text-text-base mb-2">Plain text</h3>
+      <p class="rounded-xl border border-blue-light/60 bg-white p-4 text-sm text-text-base/80 mb-6">{plainCitation}</p>
+
+      <h3 class="text-lg font-semibold text-text-base mb-2">BibTeX</h3>
+      <pre class="rounded-xl border border-blue-light/60 bg-white p-4 text-sm text-text-base/80 overflow-x-auto select-all"><code>{bibtex}</code></pre>
+
+      {orcid && (
+        <p class="text-sm text-text-base/60 mt-6">
+          Author: Tory Moghadam,
+          <a href={orcid} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">ORCID {orcid.replace('https://orcid.org/', '')}</a>.
+        </p>
+      )}
+    </div>
+  </section>
+
+</BaseLayout>

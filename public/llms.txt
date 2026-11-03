@@ -1,0 +1,49 @@
+# OpenMuscle
+
+> OpenMuscle is an open-source, open-hardware project that builds affordable forearm pressure-myography (force myography) wearables which predict finger motion with machine learning. The FlexGrid V4 band reads a 15x4 grid of 60 Velostat pressure cells with an ESP32-S3 at roughly 18 to 20 Hz over Wi-Fi UDP, plus a 6-axis IMU. Ground-truth labels come from Meta Quest hand tracking or the LASK5 handheld labeler. Hardware is CERN-OHL-S-2.0, software is MIT, and the dataset is CC BY 4.0.
+
+OpenMuscle is early-stage research, not a finished product. The headline result from the paper is a generalization ladder for finger-flexion error (MAE, fraction of full curl): 0.043 with a random split, 0.110 with a temporal split, 0.16 to 0.33 when the band is re-donned in a new session, and 0.27 across wearers. Please cite the paper when using the data or results (see the research page).
+
+## Site pages
+
+- [Home](https://openmuscle.org/): What OpenMuscle is, a replay of real finger-prediction data, and the main repositories.
+- [Technology](https://openmuscle.org/technology/): How pressure myography plus machine learning predicts fingers, devices compared, methodology.
+- [Robotics](https://openmuscle.org/robotics/): Using human hand demonstrations from the band plus VR or HID labels as training data for robot hands.
+- [Research and data](https://openmuscle.org/research/): The dataset, the paper, baseline results, and how to cite.
+- [Repositories](https://openmuscle.org/repositories/): Every OpenMuscle GitHub repository with its license.
+- [Get involved](https://openmuscle.org/get-involved/): Ways to test hardware, write code, and contribute data.
+- [About](https://openmuscle.org/about/): Origin story, mission, project timeline and licenses.
+- [Visual timeline](https://openmuscle.org/visual-timeline/): Photo timeline of the prototypes from 2022 to the FlexGrid flexible PCB.
+
+## Dataset and paper
+
+- [OpenMuscle-Dataset](https://github.com/Open-Muscle/OpenMuscle-Dataset): Labeled and raw capture sessions as plain text and CSV, CC BY 4.0.
+- [Paper draft (Markdown)](https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/analysis/paper/paper.md): Forearm force-myography with VR hand-tracking ground truth: dataset and honest baselines.
+- [Paper analysis code](https://github.com/Open-Muscle/OpenMuscle-Software/tree/main/analysis/paper): Scripts that regenerate every number and figure in the paper from the raw captures.
+- [How to cite](https://openmuscle.org/research/#cite): BibTeX and plain-text citation for the paper.
+
+## GitHub repositories
+
+- [OpenMuscle-Hub](https://github.com/Open-Muscle/OpenMuscle-Hub): Central hub and roadmap linking all repositories.
+- [OpenMuscle-FlexGrid](https://github.com/Open-Muscle/OpenMuscle-FlexGrid): KiCad designs for the 60-sensor flexible band and rigid ESP32-S3 board (CERN-OHL-S-2.0).
+- [FlexGridV4-Firmware](https://github.com/Open-Muscle/FlexGridV4-Firmware): MicroPython firmware for the FlexGrid V4 band (MIT).
+- [OpenMuscle-LASK5](https://github.com/Open-Muscle/OpenMuscle-LASK5): Hardware for the LASK5 handheld finger-position labeler (CERN-OHL-S-2.0).
+- [LASK5-Firmware](https://github.com/Open-Muscle/LASK5-Firmware): MicroPython firmware for the LASK5 labeler (MIT).
+- [OpenMuscle-Software](https://github.com/Open-Muscle/OpenMuscle-Software): The OpenMuscle Studio PC app for capture, training and live prediction, plus the paper analysis (MIT).
+- [OpenMuscle-AR](https://github.com/Open-Muscle/OpenMuscle-AR): WebXR client that streams Meta Quest hand tracking as labels (MIT).
+- [OpenMuscle-Library](https://github.com/Open-Muscle/OpenMuscle-Library): Shared KiCad symbols, footprints and CAD parts.
+- [OpenMuscle-Band](https://github.com/Open-Muscle/OpenMuscle-Band): The original 12-sensor OM-12 armband, a legacy design.
+
+## Docs
+
+- [Getting started](https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/getting-started.md): Install the app, connect the band to Wi-Fi, record, train and predict.
+- [FlexGrid V4 band reference](https://github.com/Open-Muscle/FlexGridV4-Firmware/blob/main/docs/device-reference.md): Buttons, light patterns and screens of the band.
+- [Troubleshooting](https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/troubleshooting.md): What to check when the band is not found or recording will not start.
+- [Roadmap](https://github.com/Open-Muscle/OpenMuscle-Hub/blob/main/ROADMAP.md): Near-term milestones and long-term plans.
+- [Contributing guide](https://github.com/Open-Muscle/.github/blob/main/CONTRIBUTING.md): How to contribute to any repository.
+
+## Optional
+
+- [llms-full.txt](https://openmuscle.org/llms-full.txt): Longer fact sheet with hardware, data format, results and licenses in one file.
+- [GitHub organization](https://github.com/Open-Muscle): All repositories and issues.
+- [YouTube channel](https://www.youtube.com/@TURFPTAx): Build videos, demos and livestreams.

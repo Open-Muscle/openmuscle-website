@@ -1,0 +1,32 @@
+# OpenMuscle is open source and open data. Everything public is welcome to be
+# crawled, indexed and used for search and AI answers.
+
+User-agent: *
+Allow: /
+
+# AI and answer-engine crawlers, listed explicitly so the intent is unambiguous.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+Sitemap: https://openmuscle.org/sitemap-index.xml

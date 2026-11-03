@@ -1,12 +1,81 @@
 ---
+import '../styles/global.css';
+import researchData from '../data/research.json';
+
 interface Props {
   title: string;
   description?: string;
+  /** Extra schema.org node(s) for this page. Merged into the shared JSON-LD graph. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Social preview image, site-relative or absolute. Defaults to the site image. */
+  image?: string;
+  imageAlt?: string;
 }
 
-const { title, description = "Open-source prosthetic sensor technology for all humanity. Affordable pressure myography sensors that predict finger movements using machine learning." } = Astro.props;
+const DEFAULT_DESCRIPTION =
+  "Open-source prosthetic sensor technology for all humanity. Affordable pressure myography sensors that predict finger movements using machine learning.";
 
-import '../styles/global.css';
+// Existing image under public/images, used for og:image and twitter:image.
+const DEFAULT_IMAGE = {
+  src: '/images/backgrounds/hero-render.png',
+  width: 1168,
+  height: 880,
+  alt: 'Blueprint-style sketch of an OpenMuscle pressure sensor test rig',
+};
+
+const {
+  title,
+  description = DEFAULT_DESCRIPTION,
+  jsonLd,
+  image,
+  imageAlt,
+} = Astro.props;
+
+const site = Astro.site ?? new URL('https://openmuscle.org');
+const origin = site.origin;
+const canonical = new URL(Astro.url.pathname, site).href;
+const fullTitle = `${title} | OpenMuscle`;
+
+const usingDefaultImage = !image;
+const ogImage = new URL(image ?? DEFAULT_IMAGE.src, site).href;
+const ogImageAlt = imageAlt ?? (usingDefaultImage ? DEFAULT_IMAGE.alt : fullTitle);
+
+// Shared schema.org nodes, emitted on every page.
+const orgId = `${origin}/#organization`;
+const hasOrcid = researchData.orcid && researchData.orcid !== 'TODO';
+
+const organization = {
+  '@type': 'Organization',
+  '@id': orgId,
+  name: 'OpenMuscle',
+  url: `${origin}/`,
+  logo: { '@type': 'ImageObject', url: `${origin}/icon-192.png`, width: 192, height: 192 },
+  description:
+    'OpenMuscle is an open-source, open-hardware project building affordable forearm pressure-myography wearables that predict finger motion with machine learning.',
+  ...(hasOrcid && {
+    founder: { '@type': 'Person', '@id': researchData.orcid, name: 'Tory Moghadam' },
+  }),
+  sameAs: ['https://github.com/Open-Muscle', 'https://www.youtube.com/@TURFPTAx'],
+};
+
+const website = {
+  '@type': 'WebSite',
+  '@id': `${origin}/#website`,
+  name: 'OpenMuscle',
+  url: `${origin}/`,
+  description: DEFAULT_DESCRIPTION,
+  inLanguage: 'en',
+  publisher: { '@id': orgId },
+};
+
+// Pages may pass a node or an array of nodes. Drop any per-node @context, the
+// graph carries one.
+const pageNodes = (jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []).map(
+  ({ '@context': _context, ...node }) => node
+);
+const graph = { '@context': 'https://schema.org', '@graph': [organization, website, ...pageNodes] };
+// Escape "<" so no string value can close the script element early.
+const jsonLdString = JSON.stringify(graph).replace(/</g, '\u003c');
 ---
 
 <!DOCTYPE html>
@@ -14,15 +83,41 @@ import '../styles/global.css';
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
     <meta name="theme-color" content="#FEF9F5" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OpenMuscle" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={ogImageAlt} />
+    {usingDefaultImage && <meta property="og:image:width" content={String(DEFAULT_IMAGE.width)} />}
+    {usingDefaultImage && <meta property="og:image:height" content={String(DEFAULT_IMAGE.height)} />}
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
-    <title>{title} | OpenMuscle</title>
+
+    <!-- Structured data -->
+    <script type="application/ld+json" set:html={jsonLdString} />
   </head>
   <body class="min-h-screen flex flex-col">
     <!-- Navigation -->
@@ -39,10 +134,11 @@ import '../styles/global.css';
           </a>
 
           <!-- Desktop Nav -->
-          <div class="hidden md:flex items-center gap-8">
+          <div class="hidden min-[1100px]:flex items-center gap-5 whitespace-nowrap">
             <a href="/" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Home</a>
             <a href="/technology" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Technology</a>
             <a href="/robotics" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Robotics</a>
+            <a href="/research" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Research</a>
             <a href="/repositories" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Repositories</a>
             <a href="/get-involved" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">Get Involved</a>
             <a href="/about" class="text-text-base/70 hover:text-orange-bold font-medium transition-colors">About</a>
@@ -59,7 +155,7 @@ import '../styles/global.css';
           </div>
 
           <!-- Mobile Menu Button -->
-          <button id="mobile-menu-btn" class="md:hidden p-2 text-text-base/70 hover:text-orange-bold">
+          <button id="mobile-menu-btn" class="min-[1100px]:hidden p-2 text-text-base/70 hover:text-orange-bold">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -67,11 +163,12 @@ import '../styles/global.css';
         </div>
 
         <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden pb-4">
+        <div id="mobile-menu" class="hidden min-[1100px]:hidden pb-4">
           <div class="flex flex-col gap-3">
             <a href="/" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Home</a>
             <a href="/technology" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Technology</a>
             <a href="/robotics" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Robotics</a>
+            <a href="/research" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Research</a>
             <a href="/repositories" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Repositories</a>
             <a href="/get-involved" class="text-text-base/70 hover:text-orange-bold font-medium py-2">Get Involved</a>
             <a href="/about" class="text-text-base/70 hover:text-orange-bold font-medium py-2">About</a>
@@ -103,6 +200,7 @@ import '../styles/global.css';
             <h4 class="font-semibold text-text-base mb-3">Project</h4>
             <ul class="space-y-2 text-sm text-text-base/60">
               <li><a href="/technology" class="hover:text-blue-primary transition-colors">Technology</a></li>
+              <li><a href="/research" class="hover:text-blue-primary transition-colors">Research</a></li>
               <li><a href="/repositories" class="hover:text-blue-primary transition-colors">Repositories</a></li>
               <li><a href="/about" class="hover:text-blue-primary transition-colors">About</a></li>
               <li><a href="/visual-timeline" class="hover:text-blue-primary transition-colors">Timeline</a></li>

@@ -1,0 +1,122 @@
+# OpenMuscle: fact sheet for researchers and AI assistants
+
+> OpenMuscle is an open-source, open-hardware project that builds affordable forearm pressure-myography (force myography, FMG) wearables which predict finger motion with machine learning. This file collects the key facts in one place. Short version: [llms.txt](https://openmuscle.org/llms.txt). Site: https://openmuscle.org. GitHub: https://github.com/Open-Muscle.
+
+Facts below come from the project repositories, the website, and the paper draft, as of November 2026. Where a number is not stated, it is left out rather than guessed. OpenMuscle is early-stage research, not a finished product or a medical device.
+
+## What OpenMuscle is
+
+- A wearable band reads pressure over the forearm. Muscle and tendon movement changes that pressure distribution, and a machine learning model maps it to finger positions.
+- It is an alternative to surface EMG and to cameras or instrumented gloves: no electrodes, nothing on the hand, and it works outside the lab.
+- Target uses: prosthetic control, a human interface device, and labeled demonstration data for dexterous and humanoid robotics.
+- The project estimates about $45 in components per device.
+- Origin: founded by Tory Moghadam, a self-taught hardware engineer, after hearing of an amputee fitted with a prosthetic hand that could not be taken home because of proprietary restrictions. The goal is sensor technology that is free for everyone under open licenses.
+
+## Hardware: FlexGrid V4 band
+
+- Sensing: a 15 x 4 grid of 60 Velostat pressure cells on a flexible PCB sheet (about 3 mm thick).
+- Controller: ESP32-S3 on a small rigid board; V4 adds a microSD socket for local logging and an RGB status LED.
+- Readings: about 12-bit per cell.
+- Streaming: roughly 18 to 20 Hz over Wi-Fi UDP to a PC.
+- Motion: a 6-axis IMU on the band.
+- Firmware: MicroPython (FlexGridV4-Firmware). Wi-Fi setup is done from a phone.
+- Status: V4 is the current, validated revision (fabricated at JLCPCB in June 2026). V4 bands are being distributed as early starter kits to outside collaborators. Earlier revisions: V3 (validated), V2, V1, V0. The legacy OM-12 band has 12 sensors in a 2 x 6 layout.
+- Design files: https://github.com/Open-Muscle/OpenMuscle-FlexGrid (KiCad, bill of materials, assembly notes).
+
+## Labels (ground truth)
+
+- Meta Quest hand tracking: a WebXR application streams both hands as 25-joint poses (position and orientation, 7 floats per joint, 175 values per hand) at about 25 Hz. A temporal matcher on a single PC clock pairs each sensor frame with the nearest label frame within a 175 ms window. Each band is routed to the hand on its own arm. The paper used a Meta Quest 3S. Code: https://github.com/Open-Muscle/OpenMuscle-AR.
+- LASK5 handheld labeler: a handheld actuator wand whose piston positions are precise, repeatable finger labels that the wearer follows. Hardware: https://github.com/Open-Muscle/OpenMuscle-LASK5, firmware: https://github.com/Open-Muscle/LASK5-Firmware.
+- HID devices (keyboard, game controller, MIDI) as label tracks are on the roadmap, not available yet.
+
+## Software
+
+- OpenMuscle Studio (https://github.com/Open-Muscle/OpenMuscle-Software): a PC app that finds bands on the local Wi-Fi, records with webcam or LASK5 labels, trains finger-prediction models, and runs them live. Installers for Windows, macOS and Linux. The Meta Quest WebXR client streams hand-tracking labels to the same PC hub.
+- The paper analysis lives in the same repository under analysis/paper/. Running `python analysis/paper/analyze.py` regenerates every number in the paper from the raw captures, and `figures.py` regenerates the figures.
+
+## Dataset
+
+- Repository: https://github.com/Open-Muscle/OpenMuscle-Dataset (license CC BY 4.0, use including commercial use is allowed with attribution to the OpenMuscle project).
+- Layout: `flexgrid/` FlexGrid V3 capture sessions (CSV, 60-sensor pressure matrix); `merged/` merged multi-session training CSVs from the PC pipeline; `curated/` hand-picked good sessions from early capture runs; `legacy/` early prototype captures (txt) from pre-FlexGrid devices.
+- Format: plain text and CSV. A formal schema document is on the roadmap; until then the loader code in `pc/src/openmuscle/data/` in OpenMuscle-Software is the format reference. The software can convert and train from these files (`openmuscle convert`, `openmuscle train`).
+- The repository README is the authoritative statement of what is published today. A Hugging Face mirror and a dataset DOI are planned and are not available yet.
+
+### The paper's analysis set
+
+- 2 wearers, 4 sessions, 8 two-hand captures, both bands and two-hand labeling in every capture.
+- About 22,300 paired sensor-label frames after dropping rows without a full 25-joint label (11,145 left hand and 11,146 right hand).
+- Excluded and documented: one 9.7 s single-band fragment and one capture with a 29.5 s hand-tracking dropout (23% of that take). The retained captures had zero flat cells, zero sensor saturation, and fully populated, varying labels.
+- Targets: 15 wrist-relative angular degrees of freedom per hand, derived deterministically from the raw joints: per-finger flexion normalized to [0, 1] (5 targets; 0 is extended, 1 is curled) and per-joint flexion angles in degrees for MCP and PIP of each finger and MCP and IP of the thumb (10 targets). Wrist-relative angles are used because raw world-frame joint positions would let a model memorize where the wearer stood.
+
+## Paper
+
+- Title: OpenMuscle: Forearm Force-Myography with VR Hand-Tracking Ground Truth: Dataset and Honest Baselines.
+- Author: Tory Moghadam (ORCID https://orcid.org/0009-0001-8126-247X). Status: preprint draft, not peer reviewed, DOI pending.
+- Where: https://openmuscle.org/research/ lists the PDF, DOI and dataset links as they are published. The Markdown draft is at https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/analysis/paper/paper.md.
+- Contributions: (1) an open FMG-plus-VR-labeling system (hardware, firmware, capture studio); (2) a first two-wearer, four-session dataset with wrist-relative canonical finger-angle labels; (3) baselines under a four-rung generalization ladder; (4) tooling lessons encoded as guards in the released pipeline.
+
+### Headline result: the generalization ladder
+
+Model: one random forest (100 trees) per hand per condition, mapping the 60 raw cell values of a single frame to the 15 targets. No temporal context, calibration or normalization. It is a deliberate floor, so differences between protocols cannot be blamed on model capacity.
+
+Mean finger-flexion MAE (fraction of full curl, mean over sessions and hands), with joint-angle error and typical flexion R^2:
+
+| Protocol | Flexion MAE | Joint-angle MAE | Typical flexion R^2 |
+|---|---|---|---|
+| E1 within-session, random 80/20 split | 0.043 (4.9 deg) | 4.1 to 6.0 deg | 0.84 to 0.91 |
+| E2 within-session, temporal split (train on first 80% of the timeline) | 0.110 (12.7 deg) | 7.8 to 18.7 deg | 0.21 to 0.77 |
+| E3 cross-session, same wearer (band re-donned) | 0.16 to 0.33 | 16 to 42 deg | at most 0.36, often below 0 |
+| E4 cross-wearer | 0.27 | 27 to 32 deg | below 0 in every case |
+
+### What the paper concludes
+
+1. Random splits flatter the model by about 2.6x (E1 versus E2: identical data and model, only the split differs). At about 19 Hz neighbouring frames are near-duplicates, so a random split leaks near-copies of test frames into training.
+2. Donning variance rivals wearer identity. Re-donning on the same day cost 0.16 flexion MAE; five days and a re-donning apart cost 0.25 to 0.42, as bad as or worse than testing on a different wearer (0.27). The dominant failure mode is that the band never sits in the same place twice.
+3. Within a session, FMG is usable today: about 5 degrees per joint under a random split and about 9 to 13 degrees under a temporal split, enough for live per-hand "ghost hand" rendering. Training to prediction takes under a minute on consumer hardware.
+4. Per finger, the four long fingers score 0.11 to 0.14 flexion MAE within a session (temporal split) and 0.30 to 0.34 across wearers. The thumb appears easier (0.036 within, 0.050 across wearers), but this is largely an artifact of its narrower target range.
+5. Very short sessions (under a minute of data per hand) generalize worst under a temporal split; session length matters more than take count.
+
+### Limitations stated in the paper
+
+Two wearers, four sessions and one hardware revision, so cross-wearer conclusions are directional, not definitive. The baseline is frame-wise; temporal models and per-session calibration are the obvious next experiments. VR hand tracking is itself an estimator, so label noise is reduced but not eliminated. Flexion normalization uses nominal joint ranges rather than per-person calibration. The band IMU orientation is captured but not yet used as a feature.
+
+### Lessons encoded in the pipeline
+
+Silent model routing (a server restart reloaded the previous wearer's models, and a shape guard refused new models without telling the user) and flat-cell duds (a capture that looks structurally perfect while most cells never move) each cost a session. The released pipeline now stamps wearer, session and source captures into model metadata, warns on wearer mismatch, and shows a live per-cell activity verdict while recording.
+
+### Earlier proof-of-concept results (website Technology page)
+
+Single-session, small-data results, shown for context and not comparable to the ladder above: FlexGrid-60 with an ExtraTrees regressor reached R^2 = 0.660 on 683 holdout samples (1,669 training samples); the legacy OM-12 band with a RandomForest reached R^2 = 0.264. The same page notes that sensor baselines shift between sessions (mean values drift by about 300), so cross-session prediction was unreliable without calibration, which matches the ladder.
+
+## Licenses
+
+- Hardware: CERN-OHL-S-2.0.
+- Software and firmware: MIT.
+- Dataset: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/).
+- Documentation: Creative Commons (the Hub documentation is CC BY-SA 4.0).
+
+## How to cite
+
+BibTeX (DOI pending):
+
+```
+@misc{moghadam2026openmuscle,
+  author = {Moghadam, Tory},
+  title = {{OpenMuscle: Forearm Force-Myography with VR Hand-Tracking Ground Truth: Dataset and Honest Baselines}},
+  year = {2026},
+  url = {https://openmuscle.org/research},
+  note = {DOI pending},
+}
+```
+
+## Links
+
+- Website: https://openmuscle.org
+- Research and data: https://openmuscle.org/research/
+- GitHub organization: https://github.com/Open-Muscle
+- Dataset: https://github.com/Open-Muscle/OpenMuscle-Dataset
+- Hub and roadmap: https://github.com/Open-Muscle/OpenMuscle-Hub
+- FlexGrid hardware: https://github.com/Open-Muscle/OpenMuscle-FlexGrid
+- Studio software and paper analysis: https://github.com/Open-Muscle/OpenMuscle-Software
+- YouTube: https://www.youtube.com/@TURFPTAx
+- Questions: open an issue on the GitHub repository the question is about.
