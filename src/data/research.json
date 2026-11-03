@@ -1,7 +1,7 @@
 {
-  "datasetHf": "TODO",
+  "datasetHf": "https://huggingface.co/datasets/openmuscle/openmuscle-fmg",
   "datasetGithub": "https://github.com/Open-Muscle/OpenMuscle-Dataset",
-  "datasetDoi": "TODO",
+  "datasetDoi": "10.57967/hf/11416",
   "paperPdf": "/papers/openmuscle-fmg-dataset-v0.2.pdf",
   "paperDoi": "TODO",
   "orcid": "https://orcid.org/0009-0001-8126-247X",
