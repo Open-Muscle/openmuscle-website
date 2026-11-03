@@ -1,5 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import research from '../data/research.json';
+
+// Dataset URLs and the DOI live in src/data/research.json, shared with /research.
+const hfUrl = research.datasetHf;
+const rawCsvUrl = research.datasetGithub;
+const doi = research.datasetDoi;
+const doiUrl = doi.startsWith('http') ? doi : `https://doi.org/${doi}`;
+const doiLabel = doi.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
 
 const repos = [
   { name: "OpenMuscle-Hub", desc: "Central documentation and project hub for the OpenMuscle ecosystem.", tags: ["Docs", "Hub"], license: "MIT", url: "https://github.com/Open-Muscle/OpenMuscle-Hub" },
@@ -55,6 +63,52 @@ const startHere = [
         </div>
       </div>
 
+      <div class="mb-12">
+        <h2 class="text-2xl font-bold mb-2">Data</h2>
+        <p class="text-text-base/60 mb-6 max-w-3xl">
+          The recordings behind the paper, free to use under CC BY 4.0. Start with the Hugging Face
+          copy; the GitHub repository is the raw CSV drop. The
+          <a href="/research" class="text-blue-primary hover:text-orange-bold underline">research page</a>
+          explains what is in them.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="card group">
+            <a href={hfUrl} target="_blank" rel="noopener noreferrer" class="block">
+              <div class="flex items-start justify-between mb-3">
+                <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors"><span aria-hidden="true">&#x1F917;</span> openmuscle-fmg</h3>
+                <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+              </div>
+              <p class="text-sm text-text-base/60">
+                The OpenMuscle dataset on Hugging Face: forearm pressure recordings with finger labels,
+                as Parquet files with a dataset card and a viewer. 75 captures in four configs, from two wearers.
+              </p>
+            </a>
+            <div class="flex flex-wrap items-center gap-2 text-xs mt-4">
+              <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Dataset</span>
+              <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Parquet</span>
+              <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">CC BY 4.0</span>
+              <a href={doiUrl} target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded-full border border-blue-primary/40 font-mono text-blue-primary hover:text-orange-bold hover:border-orange-bold transition-colors">DOI {doiLabel}</a>
+            </div>
+          </div>
+          <a href={rawCsvUrl} target="_blank" rel="noopener noreferrer" class="card group block">
+            <div class="flex items-start justify-between mb-3">
+              <h3 class="font-semibold text-lg group-hover:text-orange-bold transition-colors">OpenMuscle-Dataset</h3>
+              <svg class="w-5 h-5 text-text-base/30 group-hover:text-blue-primary transition-colors flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+            </div>
+            <p class="text-sm text-text-base/60 mb-4">
+              The raw drop on GitHub: capture sessions as plain text and CSV, including earlier prototype
+              recordings. Free to clone.
+            </p>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">Dataset</span>
+              <span class="px-2 py-1 rounded-full bg-orange-light/50 text-orange-bold">CSV</span>
+              <span class="px-2 py-1 rounded-full bg-blue-pale/50 text-blue-primary">CC BY 4.0</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <h2 class="text-2xl font-bold mb-6">Code and hardware</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {repos.map((repo) => (
           <a href={repo.url} target="_blank" class="card group block">

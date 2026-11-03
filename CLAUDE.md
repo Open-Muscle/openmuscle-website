@@ -162,3 +162,22 @@ Replace files in `public/logos/`. Variants needed:
 
 ### Update featured repos on home page
 Edit the `repoSlugs` array at the top of `index.astro` and the `repoMeta` object for descriptions/tags.
+
+### Update the Hugging Face dataset or DOI links
+`src/data/research.json` holds the dataset URLs and DOI. The `/research` page, the technical report page, the
+`/repositories` Data section and the JSON-LD all read from it. The Hugging Face organization link in the footer and
+in the Organization `sameAs` list is in `BaseLayout.astro`, and the home page call to action is in `index.astro`.
+Keep `public/llms.txt` and `public/llms-full.txt` in step by hand.
+
+### Updating the paper page (`/research/paper`)
+The HTML report is `src/pages/research/paper.md`, rendered by `src/layouts/PaperLayout.astro`. The body is the
+report's `analysis/paper/paper.md` from the OpenMuscle-Software repository, unchanged except that the two figure paths
+point at `/images/research/`. To refresh it:
+1. Pick the source ref and note its short hash: `git -C <OpenMuscle-Software> rev-parse --short <ref>`.
+2. Copy the new `paper.md` body under the front matter, fix the figure paths, and copy the figures from
+   `analysis/paper/` into `public/images/research/`.
+3. Update `reportVersion`, `reportDate` and `sourceCommit` in the front matter, and replace the PDF in `public/papers/`
+   (and `paperPdf` in `research.json` if the file name changes).
+
+`src/plugins/rehype-paper.mjs` wraps tables in a scrolling container, turns lone images into figures with captions, and
+breaks the Author, Report and Artifacts header lines. The prose styles are `.paper-prose` in `global.css`.

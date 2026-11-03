@@ -1,0 +1,137 @@
+---
+// Layout for the HTML copy of the technical report (src/pages/research/paper.md).
+// The Markdown body is the report itself; this layout adds the version note,
+// the links, a contents list and the typography (.paper-prose in global.css).
+// External URLs come from src/data/research.json, like the /research page.
+import fs from 'node:fs';
+import path from 'node:path';
+import type { MarkdownLayoutProps } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import research from '../data/research.json';
+
+type Frontmatter = {
+  title: string;
+  description: string;
+  reportVersion: string;
+  reportDate: string;
+  sourceRepo: string;
+  sourcePath: string;
+  sourceCommit: string;
+};
+type Props = MarkdownLayoutProps<Frontmatter>;
+
+const { frontmatter, headings } = Astro.props;
+
+const isSet = (v: unknown): v is string =>
+  typeof v === 'string' && v.trim() !== '' && v.trim() !== 'TODO';
+const doiUrl = (v: string) => (v.startsWith('http') ? v : `https://doi.org/${v}`);
+const doiLabel = (v: string) => v.replace(/^https?:\/\/(dx\.)?doi\.org\//, '');
+
+const site = Astro.site ?? new URL('https://openmuscle.org');
+const origin = site.origin;
+const pageUrl = new URL(Astro.url.pathname, site).href;
+const absolute = (u: string) => new URL(u, site).href;
+
+const pdfLive =
+  isSet(research.paperPdf) &&
+  (research.paperPdf.startsWith('http') ||
+    fs.existsSync(path.join(process.cwd(), 'public', research.paperPdf)));
+const hf = isSet(research.datasetHf) ? research.datasetHf : null;
+const datasetDoi = isSet(research.datasetDoi) ? research.datasetDoi : null;
+const analysisCode = isSet(research.analysisCode) ? research.analysisCode : null;
+const orcid = isSet(research.orcid) ? research.orcid : null;
+
+const { reportVersion, reportDate, sourceRepo, sourcePath, sourceCommit } = frontmatter;
+const commitUrl = `https://github.com/Open-Muscle/${sourceRepo}/commit/${sourceCommit}`;
+
+const contents = (headings ?? []).filter((h) => h.depth === 2);
+
+const c = research.citation;
+const articleNode = {
+  '@type': 'ScholarlyArticle',
+  '@id': `${pageUrl}#article`,
+  headline: c.title,
+  name: `${c.title} (technical report ${reportVersion})`,
+  description: frontmatter.description,
+  url: pageUrl,
+  mainEntityOfPage: pageUrl,
+  inLanguage: 'en',
+  version: reportVersion.replace(/^v/, ''),
+  datePublished: reportDate,
+  isAccessibleForFree: true,
+  author: {
+    '@type': 'Person',
+    ...(orcid && { '@id': orcid, sameAs: orcid }),
+    name: `${c.authorGiven} ${c.authorFamily}`,
+  },
+  publisher: { '@type': 'Organization', '@id': `${origin}/#organization`, name: 'OpenMuscle', url: `${origin}/` },
+  about: { '@id': `${absolute('/research/')}#dataset` },
+  ...(pdfLive && {
+    encoding: {
+      '@type': 'MediaObject',
+      contentUrl: absolute(research.paperPdf),
+      encodingFormat: 'application/pdf',
+    },
+  }),
+};
+---
+
+<BaseLayout title={frontmatter.title} description={frontmatter.description} jsonLd={articleNode}>
+  <article class="blueprint-grid">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
+      <p class="text-sm mb-6">
+        <a href="/research" class="text-blue-primary hover:text-orange-bold font-medium">&larr; Research and data</a>
+      </p>
+
+      <aside aria-label="About this page" class="rounded-2xl border border-orange-primary/30 bg-orange-light/30 p-5 sm:p-6 mb-8 text-sm text-text-base/80">
+        <p class="mb-3">
+          <strong class="text-text-base">Technical report {reportVersion}, <time datetime={reportDate}>{reportDate}</time>.</strong>
+          This is the online version of the report. It is rendered from
+          <code class="px-1.5 py-0.5 rounded bg-blue-light/30 break-all">{sourcePath}</code>
+          in {sourceRepo} at commit
+          <a href={commitUrl} target="_blank" rel="noopener noreferrer" class="font-mono text-blue-primary hover:text-orange-bold underline">{sourceCommit}</a>.
+          The text and numbers are the report's own. It is a preprint draft and has not been peer reviewed.
+        </p>
+        <ul class="flex flex-wrap gap-x-5 gap-y-2 font-medium">
+          {pdfLive && (
+            <li><a href={research.paperPdf} class="text-blue-primary hover:text-orange-bold underline">PDF version</a></li>
+          )}
+          {analysisCode && (
+            <li><a href={analysisCode} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">Source and analysis code on GitHub</a></li>
+          )}
+          {hf && (
+            <li><a href={hf} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">Dataset on Hugging Face</a></li>
+          )}
+          {datasetDoi && (
+            <li>
+              <a href={doiUrl(datasetDoi)} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">
+                Dataset DOI <span class="font-mono">{doiLabel(datasetDoi)}</span>
+              </a>
+            </li>
+          )}
+        </ul>
+      </aside>
+
+      {contents.length > 0 && (
+        <details class="paper-toc mb-10 rounded-xl border border-blue-light/60 bg-white/70 px-4 py-3 text-sm">
+          <summary class="cursor-pointer font-semibold text-text-base">Contents</summary>
+          <ol class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-1.5">
+            {contents.map((h) => (
+              <li><a href={`#${h.slug}`} class="text-text-base/70 hover:text-orange-bold">{h.text}</a></li>
+            ))}
+          </ol>
+        </details>
+      )}
+
+      <div class="paper-prose">
+        <slot />
+      </div>
+
+      <div class="solid-line-h mt-14 pt-6 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-medium">
+        <a href="/research" class="text-blue-primary hover:text-orange-bold">&larr; Research and data</a>
+        {pdfLive && <a href={research.paperPdf} class="text-blue-primary hover:text-orange-bold">Download the PDF</a>}
+        {hf && <a href={hf} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold">Download the dataset</a>}
+      </div>
+    </div>
+  </article>
+</BaseLayout>

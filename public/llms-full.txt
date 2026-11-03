@@ -36,10 +36,11 @@ Facts below come from the project repositories, the website, and the paper draft
 
 ## Dataset
 
-- Repository: https://github.com/Open-Muscle/OpenMuscle-Dataset (license CC BY 4.0, use including commercial use is allowed with attribution to the OpenMuscle project).
+- Hugging Face (the main release): https://huggingface.co/datasets/openmuscle/openmuscle-fmg, DOI 10.57967/hf/11416 (https://doi.org/10.57967/hf/11416). Parquet files with a dataset card and the Dataset Viewer, licensed CC BY 4.0. Release 0.1 (November 2026) holds 75 captures from two wearers in four configs: `lask5_labeled` (23 captures), `quest_labeled` (25), `legacy_2025` (13) and `supplementary_unlabeled` (14), 348,378 sensor rows in total (603.9 minutes). Load it with `datasets.load_dataset("openmuscle/openmuscle-fmg", "quest_labeled")`. Organization page: https://huggingface.co/openmuscle.
+- GitHub (the raw CSV drop): https://github.com/Open-Muscle/OpenMuscle-Dataset (license CC BY 4.0, use including commercial use is allowed with attribution to the OpenMuscle project).
 - Layout: `flexgrid/` FlexGrid V3 capture sessions (CSV, 60-sensor pressure matrix); `merged/` merged multi-session training CSVs from the PC pipeline; `curated/` hand-picked good sessions from early capture runs; `legacy/` early prototype captures (txt) from pre-FlexGrid devices.
 - Format: plain text and CSV. A formal schema document is on the roadmap; until then the loader code in `pc/src/openmuscle/data/` in OpenMuscle-Software is the format reference. The software can convert and train from these files (`openmuscle convert`, `openmuscle train`).
-- The repository README is the authoritative statement of what is published today. The Hugging Face release is live at https://huggingface.co/datasets/openmuscle/openmuscle-fmg (DOI 10.57967/hf/11416), with Parquet files, a dataset card and the Dataset Viewer.
+- The GitHub repository README is the authoritative statement of what that repository publishes today; the Hugging Face dataset card is the authoritative description of the Hugging Face release.
 
 ### The paper's analysis set
 
@@ -52,7 +53,7 @@ Facts below come from the project repositories, the website, and the paper draft
 
 - Title: OpenMuscle: Forearm Force-Myography with VR Hand-Tracking Ground Truth: Dataset and Honest Baselines.
 - Author: Tory Moghadam (ORCID https://orcid.org/0009-0001-8126-247X). Status: preprint draft, not peer reviewed, DOI pending.
-- Where: https://openmuscle.org/research/ lists the PDF, DOI and dataset links as they are published. The Markdown draft is at https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/analysis/paper/paper.md.
+- Where: https://openmuscle.org/research/ lists the report, the dataset links and the DOI. Read it online (HTML) at https://openmuscle.org/research/paper/, or as a PDF at https://openmuscle.org/papers/openmuscle-fmg-dataset-v0.2.pdf. The Markdown draft is at https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/analysis/paper/paper.md.
 - Contributions: (1) an open FMG-plus-VR-labeling system (hardware, firmware, capture studio); (2) a first two-wearer, four-session dataset with wrist-relative canonical finger-angle labels; (3) baselines under a four-rung generalization ladder; (4) tooling lessons encoded as guards in the released pipeline.
 
 ### Headline result: the generalization ladder
@@ -114,7 +115,10 @@ BibTeX (DOI pending):
 - Website: https://openmuscle.org
 - Research and data: https://openmuscle.org/research/
 - GitHub organization: https://github.com/Open-Muscle
-- Dataset: https://github.com/Open-Muscle/OpenMuscle-Dataset
+- Dataset on Hugging Face: https://huggingface.co/datasets/openmuscle/openmuscle-fmg (DOI https://doi.org/10.57967/hf/11416)
+- Hugging Face organization: https://huggingface.co/openmuscle
+- Dataset, raw CSV on GitHub: https://github.com/Open-Muscle/OpenMuscle-Dataset
+- Technical report, online: https://openmuscle.org/research/paper/
 - Hub and roadmap: https://github.com/Open-Muscle/OpenMuscle-Hub
 - FlexGrid hardware: https://github.com/Open-Muscle/OpenMuscle-FlexGrid
 - Studio software and paper analysis: https://github.com/Open-Muscle/OpenMuscle-Software

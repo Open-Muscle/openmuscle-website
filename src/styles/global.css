@@ -142,3 +142,184 @@
   font-display: swap;
   src: url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 }
+
+/* ===== Long-form prose: the HTML copy of the technical report ===== */
+/* Used by src/layouts/PaperLayout.astro. The Markdown body is rendered without
+   utility classes, so every element is styled here. Tailwind's preflight strips
+   list markers and heading sizes, so those are restored below. */
+.paper-prose {
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: rgba(44, 44, 44, 0.85);
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+.paper-prose > * + * {
+  margin-top: 1.15em;
+}
+.paper-prose h1,
+.paper-prose h2,
+.paper-prose h3 {
+  color: var(--color-text-base);
+  line-height: 1.25;
+  scroll-margin-top: 5rem;
+}
+.paper-prose h1 {
+  font-size: clamp(1.625rem, 1.1rem + 2.4vw, 2.375rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+}
+.paper-prose h2 {
+  font-size: 1.625rem;
+  font-weight: 700;
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 2px dotted var(--color-blue-primary);
+}
+.paper-prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+}
+.paper-prose h2 + *,
+.paper-prose h3 + * {
+  margin-top: 0.75rem;
+}
+/* The Author / Report / Artifacts lines under the title. */
+.paper-prose h1 + p {
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  padding-left: 1rem;
+  border-left: 3px solid var(--color-orange-primary);
+  color: rgba(44, 44, 44, 0.7);
+}
+.paper-prose strong {
+  font-weight: 600;
+  color: var(--color-text-base);
+}
+.paper-prose a {
+  /* The brand blue darkened toward the text color so links stay readable at body size. */
+  color: color-mix(in srgb, var(--color-blue-primary) 45%, var(--color-text-base));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+.paper-prose a:hover {
+  color: var(--color-orange-bold);
+}
+.paper-prose ul,
+.paper-prose ol {
+  padding-left: 1.5rem;
+}
+.paper-prose ul {
+  list-style: disc;
+}
+.paper-prose ol {
+  list-style: decimal;
+}
+.paper-prose li + li {
+  margin-top: 0.4rem;
+}
+.paper-prose li::marker {
+  color: var(--color-orange-bold);
+}
+.paper-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.875em;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  background-color: rgba(191, 232, 255, 0.3);
+  overflow-wrap: anywhere;
+}
+.paper-prose pre {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(111, 190, 230, 0.3);
+  background-color: #fff;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+.paper-prose pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+.paper-prose blockquote {
+  padding-left: 1rem;
+  border-left: 3px solid var(--color-blue-primary);
+  color: rgba(44, 44, 44, 0.7);
+}
+/* Tables: the wrapper (added by src/plugins/rehype-paper.mjs) scrolls sideways, so
+   a wide table never widens the page. min-width keeps columns readable on a phone. */
+.paper-prose .table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(111, 190, 230, 0.3);
+  background-color: #fff;
+}
+.paper-prose .table-scroll:focus-visible {
+  outline: 2px solid var(--color-blue-primary);
+  outline-offset: 2px;
+}
+.paper-prose table {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.paper-prose th,
+.paper-prose td {
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  vertical-align: top;
+}
+.paper-prose th {
+  font-weight: 600;
+  color: var(--color-text-base);
+  background-color: rgba(191, 232, 255, 0.2);
+}
+.paper-prose td {
+  border-top: 1px solid rgba(191, 232, 255, 0.5);
+}
+.paper-prose tbody tr:nth-child(even) td {
+  background-color: rgba(243, 254, 254, 0.7);
+}
+/* Figures: images never exceed the column; the caption is the alt text. */
+.paper-prose figure {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+.paper-prose img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(111, 190, 230, 0.3);
+  background-color: #fff;
+}
+.paper-prose figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-align: center;
+  color: rgba(44, 44, 44, 0.6);
+}
+@media (max-width: 640px) {
+  .paper-prose {
+    font-size: 1rem;
+  }
+  .paper-prose h2 {
+    font-size: 1.4rem;
+  }
+  .paper-prose h3 {
+    font-size: 1.15rem;
+  }
+}

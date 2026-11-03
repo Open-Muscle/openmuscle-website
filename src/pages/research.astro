@@ -38,13 +38,8 @@ type LinkCard = { title: string; desc: string; href: string | null; label?: stri
 
 const datasetLinks: LinkCard[] = [
   {
-    title: 'GitHub',
-    desc: 'The OpenMuscle-Dataset repository. Plain text and CSV capture sessions, free to clone.',
-    href: github,
-  },
-  {
     title: 'Hugging Face',
-    desc: 'A hosted copy of the dataset for browsing and loading with standard ML tooling.',
+    desc: 'The dataset as Parquet files with a dataset card and the Dataset Viewer. Load it with the datasets library.',
     href: hf,
   },
   {
@@ -53,9 +48,19 @@ const datasetLinks: LinkCard[] = [
     href: datasetDoi ? doiUrl(datasetDoi) : null,
     label: datasetDoi ? doiLabel(datasetDoi) : undefined,
   },
+  {
+    title: 'GitHub',
+    desc: 'The OpenMuscle-Dataset repository. Raw capture sessions as plain text and CSV, free to clone.',
+    href: github,
+  },
 ];
 
 const paperLinks: LinkCard[] = [
+  {
+    title: 'Read online',
+    desc: 'The full report as a web page, with the figures and tables.',
+    href: '/research/paper/',
+  },
   {
     title: 'Paper (PDF)',
     desc: 'The full draft: system, dataset, baselines and limitations.',
@@ -201,7 +206,7 @@ const distribution = [
   hf && {
     '@type': 'DataDownload',
     name: 'OpenMuscle dataset on Hugging Face',
-    encodingFormat: 'text/csv',
+    encodingFormat: 'application/vnd.apache.parquet',
     contentUrl: hf,
   },
 ].filter(Boolean);
@@ -277,6 +282,33 @@ const paperNode = {
         publishes its analysis code and a paper that reports how well finger prediction
         from the forearm really generalizes. Everything is free to use under open licenses.
       </p>
+
+      <!-- Dataset and report links, shown first. URLs come from research.json. -->
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        {hf && (
+          <a href={hf} target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center gap-2">
+            <span aria-hidden="true">&#x1F917;</span>
+            Dataset on Hugging Face
+          </a>
+        )}
+        {datasetDoi && (
+          <a
+            href={doiUrl(datasetDoi)}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`Dataset DOI ${doiLabel(datasetDoi)}`}
+            class="inline-flex items-stretch overflow-hidden rounded-md border border-blue-primary/50 text-sm font-semibold hover:border-orange-bold transition-colors"
+          >
+            <span class="bg-blue-light px-2.5 py-2 text-text-base">DOI</span>
+            <span class="bg-white px-3 py-2 font-mono text-text-base">{doiLabel(datasetDoi)}</span>
+          </a>
+        )}
+        <a href="/research/paper/" class="btn-secondary inline-flex items-center gap-2">Read the report</a>
+        {pdfLive && (
+          <a href={research.paperPdf} class="text-sm font-semibold text-blue-primary hover:text-orange-bold underline">PDF</a>
+        )}
+      </div>
+
       <nav aria-label="On this page" class="mt-8 flex flex-wrap justify-center gap-3 text-sm font-medium">
         <a href="#dataset" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">Dataset</a>
         <a href="#paper" class="px-3 py-1 rounded-full bg-orange-light/50 text-orange-bold hover:bg-orange-light transition-colors">Paper</a>
@@ -437,7 +469,7 @@ const paperNode = {
         </p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {paperLinks.map((item) =>
           item.href ? (
             <a

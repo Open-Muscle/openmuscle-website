@@ -17,7 +17,10 @@ OpenMuscle is early-stage research, not a finished product. The headline result 
 
 ## Dataset and paper
 
-- [OpenMuscle-Dataset](https://github.com/Open-Muscle/OpenMuscle-Dataset): Labeled and raw capture sessions as plain text and CSV, CC BY 4.0.
+- [OpenMuscle FMG dataset on Hugging Face](https://huggingface.co/datasets/openmuscle/openmuscle-fmg): The dataset as Parquet files with a dataset card and the Dataset Viewer. 75 captures in four configs from two wearers, CC BY 4.0. DOI: [10.57967/hf/11416](https://doi.org/10.57967/hf/11416).
+- [OpenMuscle-Dataset](https://github.com/Open-Muscle/OpenMuscle-Dataset): The raw drop on GitHub: capture sessions as plain text and CSV, CC BY 4.0.
+- [Technical report v0.2, online](https://openmuscle.org/research/paper/): The full report as an HTML page, same text as the PDF, with figures and tables.
+- [Technical report v0.2, PDF](https://openmuscle.org/papers/openmuscle-fmg-dataset-v0.2.pdf): The same report as a PDF.
 - [Paper draft (Markdown)](https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/analysis/paper/paper.md): Forearm force-myography with VR hand-tracking ground truth: dataset and honest baselines.
 - [Paper analysis code](https://github.com/Open-Muscle/OpenMuscle-Software/tree/main/analysis/paper): Scripts that regenerate every number and figure in the paper from the raw captures.
 - [How to cite](https://openmuscle.org/research/#cite): BibTeX and plain-text citation for the paper.
@@ -46,4 +49,5 @@ OpenMuscle is early-stage research, not a finished product. The headline result 
 
 - [llms-full.txt](https://openmuscle.org/llms-full.txt): Longer fact sheet with hardware, data format, results and licenses in one file.
 - [GitHub organization](https://github.com/Open-Muscle): All repositories and issues.
+- [Hugging Face organization](https://huggingface.co/openmuscle): The OpenMuscle datasets.
 - [YouTube channel](https://www.youtube.com/@TURFPTAx): Build videos, demos and livestreams.
