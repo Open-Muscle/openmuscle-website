@@ -22,6 +22,7 @@ Facts below come from the project repositories, the website, and the paper draft
 - Firmware: MicroPython (FlexGridV4-Firmware). Wi-Fi setup is done from a phone.
 - Status: V4 is the current, validated revision (fabricated at JLCPCB in June 2026). V4 bands are being distributed as early starter kits to outside collaborators. Earlier revisions: V3 (validated), V2, V1, V0. The legacy OM-12 band has 12 sensors in a 2 x 6 layout.
 - Design files: https://github.com/Open-Muscle/OpenMuscle-FlexGrid (KiCad, bill of materials, assembly notes).
+- Availability: the band is not sold. You can build your own from the KiCad files and the bill of materials in OpenMuscle-FlexGrid and have the boards made at a PCB assembly service. Tory Moghadam gives boards away for research in small numbers, usually one or two, and tries to cover the cost including shipping. To ask, open an issue on OpenMuscle-Hub (https://github.com/Open-Muscle/OpenMuscle-Hub/issues) or say hello on the OpenMuscle Discord (https://discord.gg/WstCaqUG63).
 
 ## Labels (ground truth)
 
@@ -85,7 +86,7 @@ Two wearers and four sessions on one hardware revision (FlexGrid V4), plus a sma
 
 Silent model routing (a server restart reloaded the previous wearer's models, and a shape guard refused new models without telling the user) and flat-cell duds (a capture that looks structurally perfect while most cells never move) each cost a session. The released pipeline now stamps wearer, session and source captures into model metadata, warns on wearer mismatch, and shows a live per-cell activity verdict while recording.
 
-### Earlier proof-of-concept results (website Technology page)
+### Earlier prototype results (website Technology page)
 
 Single-session, small-data results, shown for context and not comparable to the ladder above: the July 2025 FlexGrid prototype (a 4 x 16, 64-cell grid) with an ExtraTrees regressor reached R^2 = 0.660 on 683 holdout samples (1,669 training samples); the legacy OM-12 band with a RandomForest reached R^2 = 0.264. The same page notes that sensor baselines shift between sessions (mean values drift by about 300), so cross-session prediction was unreliable without calibration, which matches the ladder.
 

@@ -1,13 +1,13 @@
 ---
 /**
- * Interactive FlexGrid-64 sensor heatmap — plays back real holdout data
+ * Interactive 2025 prototype sensor heatmap (64 cells): plays back real holdout data
  * Canvas-based, no external dependencies
  */
 ---
 
 <div class="sensor-heatmap-wrap">
   <div class="flex items-center justify-between mb-3">
-    <h3 class="text-lg font-semibold text-text-base">FlexGrid-64 Sensor Heatmap</h3>
+    <h3 class="text-lg font-semibold text-text-base">2025 Prototype Sensor Heatmap (64 cells)</h3>
     <div class="flex items-center gap-3 text-sm text-text-base/60">
       <button id="heatmap-play" class="px-3 py-1 rounded bg-orange-primary text-white hover:bg-orange-bold transition-colors">Play</button>
       <select id="heatmap-speed" class="px-2 py-1 rounded border border-blue-light bg-white text-text-base text-sm">
@@ -34,7 +34,7 @@ async function initHeatmap() {
   const speedSel = document.getElementById('heatmap-speed') as HTMLSelectElement;
   const frameSpan = document.getElementById('heatmap-frame')!;
 
-  // Load real FlexGrid-64 data
+  // Load real 2025 prototype data
   const res = await fetch('/data/flexgrid64_holdout_predictions.json');
   const data = await res.json();
 

@@ -127,8 +127,8 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
               <div class="text-sm text-text-base/50">Per Device</div>
             </div>
             <div class="dotted-line-v pl-8">
-              <div class="text-2xl font-bold text-orange-bold">MIT</div>
-              <div class="text-sm text-text-base/50">Licensed</div>
+              <div class="text-2xl font-bold text-orange-bold">Open</div>
+              <div class="text-sm text-text-base/50">Hardware, software, data</div>
             </div>
           </div>
         </div>
@@ -187,7 +187,7 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
             </div>
             <div class="mt-2 px-1">
               <p class="text-sm text-text-base/80 leading-snug font-medium">
-                ⚠ Proof of concept — very small dataset (~683 samples). Results reflect early-stage research under optimal conditions. Larger datasets and hardware revisions are expected to improve accuracy.
+                Replay of real held-out predictions from the 2025 prototype band, one session. The current FlexGrid V4 and the open dataset (75 captures, 603.9 minutes, two wearers) are on the <a href="/research" class="text-blue-primary hover:text-orange-bold underline">research page</a>, with results from random splits to new wearers.
               </p>
             </div>
             <!-- Logo under disclaimer -->
@@ -240,7 +240,7 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
           <h3 class="text-xl font-semibold mb-2">Machine Learning</h3>
           <p class="text-text-base/60 text-sm leading-relaxed">
             Random Forest Regressors predict finger movements from pressure data.
-            The LASK5 labeling device captures ground-truth training data.
+            The LASK5 labeling device and Meta Quest hand tracking capture ground-truth training data.
             Python pipelines process UDP sensor streams in real time.
           </p>
         </div>
@@ -302,7 +302,7 @@ const repoMeta: Record<string, { tags: string[]; desc: string }> = {
             <span class="text-xl font-bold text-orange-bold">3</span>
           </div>
           <h3 class="font-semibold mb-2">Learn</h3>
-          <p class="text-sm text-text-base/60">LASK5 captures labeled finger positions. Random Forest models train on paired sensor + label data</p>
+          <p class="text-sm text-text-base/60">LASK5 or Meta Quest hand tracking captures labeled finger positions. Random Forest models train on paired sensor + label data</p>
           <div class="hidden md:block absolute top-7 -right-2 w-8">
             <svg class="w-full text-blue-primary/40" viewBox="0 0 24 8" fill="none" stroke="currentColor"><path stroke-dasharray="3 3" d="M0 4h20m-4-4l4 4-4 4"/></svg>
           </div>

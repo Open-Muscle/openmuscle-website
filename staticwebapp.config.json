@@ -1,0 +1,9 @@
+{
+  "routes": [
+    {
+      "route": "/sitemap.xml",
+      "redirect": "/sitemap-index.xml",
+      "statusCode": 301
+    }
+  ]
+}

@@ -3,6 +3,35 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import SensorHandViz from '../components/SensorHandViz.astro';
 import PredictionChart from '../components/PredictionChart.astro';
 import ModelComparison from '../components/ModelComparison.astro';
+import research from '../data/research.json';
+
+// Current band facts, from the technical report v0.2 and the FlexGrid V4 README.
+const v4Specs = [
+  { k: 'Sensing', v: '15 x 4 grid, 60 Velostat pressure cells on a flexible PCB, about 12-bit readings' },
+  { k: 'Controller', v: 'ESP32-S3 on a small rigid board' },
+  { k: 'Rate and link', v: '17 to 19 Hz per band, streamed over Wi-Fi UDP' },
+  { k: 'Motion', v: '6-axis IMU on the band' },
+  { k: 'Status', v: 'Validated, fabricated June 2026' },
+];
+
+const labelers = [
+  {
+    name: 'Meta Quest 3S hand tracking',
+    body: 'Both hands as 25-joint poses at about 25 Hz, with nothing worn on the hand. This labeled the FlexGrid V4 recordings in the open dataset.',
+  },
+  {
+    name: 'LASK5 handheld labeler',
+    body: 'Four spring-loaded pistons, one per long finger, that the fingers press. Each piston position is a repeatable label. The LASK5 data was recorded in May 2026 on the earlier V3 band; no V4 recording is LASK5-labeled yet.',
+  },
+];
+
+// The generalization ladder, flexion MAE as a fraction of full curl (report v0.2, Section 5.2).
+const ladder = [
+  { rung: 'E1', protocol: 'Within one session, random 80/20 split', mae: '0.043' },
+  { rung: 'E2', protocol: 'Within one session, temporal split (train on the first 80% of the timeline)', mae: '0.110' },
+  { rung: 'E3', protocol: 'Across sessions, same wearer (band re-donned)', mae: '0.24' },
+  { rung: 'E4', protocol: 'Across wearers', mae: '0.27' },
+];
 ---
 
 <BaseLayout title="Technology" description="Pressure Myography sensors, ML finger prediction, and real inference data from OpenMuscle devices.">
@@ -15,8 +44,8 @@ import ModelComparison from '../components/ModelComparison.astro';
         <span class="text-text-base">Meets Machine Learning</span>
       </h1>
       <p class="text-lg text-text-base/70 max-w-2xl mx-auto">
-        Hall-effect sensors measure forearm pressure patterns while machine learning
-        predicts individual finger movements — no EMG, no electrodes, no patents.
+        Velostat pressure cells measure forearm pressure patterns while machine learning
+        predicts individual finger movements: no EMG, no electrodes, no patents.
       </p>
     </div>
   </section>
@@ -33,9 +62,9 @@ import ModelComparison from '../components/ModelComparison.astro';
           </div>
           <h3 class="text-lg font-semibold text-text-base mb-2">Sense</h3>
           <p class="text-text-base/70">
-            Hall-effect sensors in a flexible grid detect pressure changes on the forearm
-            as muscles contract. The FlexGrid-60 uses a 15&times;4 array — 60 sensors
-            capturing the full pressure distribution.
+            Velostat pressure cells in a flexible grid detect pressure changes on the forearm
+            as muscles contract. The current band, FlexGrid V4, uses a 15&times;4 array of
+            60 cells capturing the full pressure distribution.
           </p>
         </div>
 
@@ -45,9 +74,10 @@ import ModelComparison from '../components/ModelComparison.astro';
           </div>
           <h3 class="text-lg font-semibold text-text-base mb-2">Predict</h3>
           <p class="text-text-base/70">
-            An ExtraTreesRegressor trained on paired sensor/actuator data predicts
+            A random forest trained on paired sensor and label data predicts
             individual finger positions from raw sensor readings alone. No feature
-            engineering — just 60 raw values in, 4 finger positions out.
+            engineering, just 60 raw values in: 4 piston positions out with the LASK5,
+            or 15 finger angles per hand with Quest hand tracking.
           </p>
         </div>
 
@@ -57,8 +87,9 @@ import ModelComparison from '../components/ModelComparison.astro';
           </div>
           <h3 class="text-lg font-semibold text-text-base mb-2">Move</h3>
           <p class="text-text-base/70">
-            Predicted finger positions drive a prosthetic hand in real time. The LASK5
-            linear actuator system provides ground truth during training, then the model
+            Predicted finger positions can drive a prosthetic hand in real time; today the
+            released system draws them as a live ghost hand. The LASK5 or Meta Quest hand
+            tracking provides ground truth during training, then the model
             runs independently on new sensor data.
           </p>
         </div>
@@ -66,7 +97,85 @@ import ModelComparison from '../components/ModelComparison.astro';
     </div>
   </section>
 
-  <!-- Proof of Concept Disclaimer -->
+  <!-- Current band: FlexGrid V4 -->
+  <section class="py-16 bg-bg-warm">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-text-base mb-2 text-center">The Current Band: <span class="text-orange-bold">FlexGrid V4</span></h2>
+      <p class="text-text-base/60 text-center mb-10 max-w-2xl mx-auto">
+        Two bands, one per forearm, stream to a PC at the same time, and two labelers
+        supply the ground truth.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+        <div class="rounded-2xl border border-orange-light bg-white p-6">
+          <h3 class="text-xl font-bold text-text-base mb-4">The band</h3>
+          <div class="space-y-3 text-sm">
+            {v4Specs.map((row) => (
+              <div class="flex justify-between gap-4">
+                <span class="text-text-base/60 shrink-0">{row.k}</span>
+                <span class="text-right text-text-base/80">{row.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-blue-light bg-white p-6">
+          <h3 class="text-xl font-bold text-text-base mb-4">Two labelers</h3>
+          <div class="space-y-4 text-sm">
+            {labelers.map((item) => (
+              <div>
+                <h4 class="font-semibold text-text-base">{item.name}</h4>
+                <p class="text-text-base/70">{item.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <h3 class="text-2xl font-bold text-text-base mb-2 text-center">How well it works: the generalization ladder</h3>
+      <p class="text-text-base/60 text-center mb-6 max-w-2xl mx-auto">
+        One deliberately simple model (a random forest per hand, 60 raw cell values in, 15 finger
+        targets out), tested four ways. Flexion MAE is the error as a fraction of full curl, so
+        lower is better. Two wearers and four sessions, so the cross-wearer rung is directional,
+        not definitive.
+      </p>
+
+      <div class="max-w-3xl mx-auto overflow-x-auto rounded-xl border border-blue-light/60 bg-white">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-blue-light/20 text-text-base">
+            <tr>
+              <th scope="col" class="px-4 py-3 font-semibold">Rung</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Protocol</th>
+              <th scope="col" class="px-4 py-3 font-semibold">Flexion MAE</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-blue-light/40 text-text-base/70">
+            {ladder.map((row) => (
+              <tr>
+                <td class="px-4 py-3 font-mono font-bold text-orange-bold">{row.rung}</td>
+                <td class="px-4 py-3">{row.protocol}</td>
+                <td class="px-4 py-3 font-mono font-bold text-text-base">{row.mae}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-sm text-text-base/60 text-center mt-4 max-w-2xl mx-auto">
+        A random split flatters the model about 2.6&times;, because neighbouring frames at 17 to
+        19 Hz are near-duplicates. Taking the band off and putting it back on costs about as much
+        as changing wearer.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="/research" class="btn-primary inline-flex items-center gap-2">Research and data</a>
+        <a href="/research/paper/" class="btn-secondary inline-flex items-center gap-2">Read the report</a>
+        <a href={research.datasetHf} target="_blank" rel="noopener noreferrer" class="btn-secondary inline-flex items-center gap-2">Dataset on Hugging Face</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Earlier results disclaimer -->
   <section class="py-6 bg-orange-light/30 border-y border-orange-primary/20">
     <div class="max-w-4xl mx-auto px-4">
       <div class="flex items-start gap-3">
@@ -74,11 +183,13 @@ import ModelComparison from '../components/ModelComparison.astro';
           <svg class="w-5 h-5 text-orange-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div class="text-sm text-text-base/80">
-          <strong class="text-text-base">Proof of Concept:</strong> The results below demonstrate that finger movement data
+          <strong class="text-text-base">Earlier results:</strong> The charts below replay the 2025 FlexGrid prototype and the
+          older OM-12 band, not the current FlexGrid V4. They demonstrate that finger movement data
           <em>can</em> be extracted from pressure myography sensors using machine learning. These models were trained on
-          very small datasets (under 2 minutes of recording) in controlled conditions. Prediction accuracy is limited —
-          we believe that hardware design improvements and substantially larger datasets (10+ minutes of continuous capture)
-          will yield significantly better results. This is early-stage research, not a finished product.
+          very small datasets (1,669 samples from one session for the prototype) in controlled conditions. Prediction accuracy is limited.
+          Since then the project has published an open dataset of 75 captures (603.9 minutes) and a report with honest
+          baselines across splits, sessions and wearers (see <a href="/research" class="text-blue-primary hover:text-orange-bold underline">Research</a>).
+          This is early-stage research, not a finished product.
         </div>
       </div>
     </div>
@@ -89,9 +200,9 @@ import ModelComparison from '../components/ModelComparison.astro';
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Real Sensor Data <span class="text-orange-bold">→</span> Finger Prediction</h2>
       <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
-        60 pressure sensors wrap around the forearm detecting muscle topology changes.
-        The ML model predicts finger positions in real time from sensor data alone.
-        683 holdout samples — data the model never saw during training.
+        The 2025 prototype wraps 64 pressure sensors (4&times;16) around the forearm, detecting muscle topology changes.
+        The ML model predicts finger positions from sensor data alone, replayed here on
+        683 holdout samples from one session: data the model never saw during training.
       </p>
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-light/30">
         <SensorHandViz />
@@ -104,16 +215,16 @@ import ModelComparison from '../components/ModelComparison.astro';
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Finger Prediction Accuracy</h2>
       <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
-        Blue is ground truth from the LASK5 actuators. Orange is what the ML model predicted
+        Blue is ground truth from the LASK5 pistons. Orange is what the ML model predicted
         from sensor data alone. Select a finger to compare.
       </p>
 
       <div class="space-y-12">
-        <!-- FlexGrid-60 -->
+        <!-- 2025 FlexGrid prototype -->
         <div class="bg-bg-warm rounded-2xl p-6 shadow-sm border border-orange-light/50">
           <div class="flex items-center gap-3 mb-4">
-            <span class="px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold text-sm font-semibold">FlexGrid-60</span>
-            <span class="text-text-base/50 text-sm">60 sensors — ExtraTrees — R² = 0.660</span>
+            <span class="px-3 py-1 rounded-full bg-orange-primary/20 text-orange-bold text-sm font-semibold">2025 FlexGrid prototype</span>
+            <span class="text-text-base/50 text-sm">64 sensors (4&times;16), ExtraTrees, R² = 0.660, one session</span>
           </div>
           <div>
             <PredictionChart device="flexgrid64" />
@@ -123,8 +234,8 @@ import ModelComparison from '../components/ModelComparison.astro';
         <!-- OM-12 -->
         <div class="bg-bg-warm rounded-2xl p-6 shadow-sm border border-orange-light/50">
           <div class="flex items-center gap-3 mb-4">
-            <span class="px-3 py-1 rounded-full bg-blue-primary/20 text-blue-primary text-sm font-semibold">OM-12 SensorBand</span>
-            <span class="text-text-base/50 text-sm">12 sensors — RandomForest — R² = 0.264</span>
+            <span class="px-3 py-1 rounded-full bg-blue-primary/20 text-blue-primary text-sm font-semibold">OM-12 SensorBand (earlier generation)</span>
+            <span class="text-text-base/50 text-sm">12 Hall-effect sensors, RandomForest, R² = 0.264</span>
           </div>
           <div>
             <PredictionChart device="om12" />
@@ -133,9 +244,9 @@ import ModelComparison from '../components/ModelComparison.astro';
       </div>
 
       <div class="mt-8 p-4 rounded-xl bg-blue-light/20 border border-blue-light/40 text-sm text-text-base/70">
-        <strong class="text-text-base">Why the difference?</strong> The FlexGrid-60 has 5&times; more sensors (60 vs 12)
+        <strong class="text-text-base">Why the difference?</strong> The 2025 prototype has about 5&times; more sensors (64 vs 12)
         and captures full hand pressure distribution. The OM-12 uses 3 separate SensorBand banks
-        with only 4 sensors each — less spatial resolution means less signal for the ML model to work with.
+        with only 4 Hall-effect sensors each, so there is less spatial resolution and less signal for the ML model to work with.
       </div>
     </div>
   </section>
@@ -145,7 +256,7 @@ import ModelComparison from '../components/ModelComparison.astro';
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-text-base mb-2 text-center">Model Selection</h2>
       <p class="text-text-base/60 text-center mb-8 max-w-xl mx-auto">
-        Six algorithms evaluated on the same train/test split. ExtraTrees won with the best
+        Six algorithms evaluated on the same train/test split of the 2025 prototype data. ExtraTrees won with the best
         balance across all four fingers, especially the harder-to-predict pinky (label_3).
       </p>
       <div class="bg-white rounded-2xl p-6 shadow-sm border border-blue-light/30">
@@ -161,13 +272,13 @@ import ModelComparison from '../components/ModelComparison.astro';
     <div class="max-w-6xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-text-base mb-8 text-center">Devices</h2>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div class="rounded-2xl border border-orange-light overflow-hidden">
           <div class="p-6 bg-gradient-to-br from-orange-light/30 to-white">
-            <h3 class="text-xl font-bold text-text-base mb-2">FlexGrid-60</h3>
+            <h3 class="text-xl font-bold text-text-base mb-2">FlexGrid V4 (current)</h3>
             <p class="text-text-base/70 mb-4">
-              A 15&times;4 grid of 60 pressure-sensing cells on a flexible sheet, read by a small
-              ESP32-S3 board. V4 is the current board: Wi-Fi setup from a phone, a status light,
+              A 15&times;4 grid of 60 Velostat pressure-sensing cells on a flexible sheet, read by a small
+              ESP32-S3 board with a 6-axis IMU. V4 is the current board (fabricated June 2026): Wi-Fi setup from a phone, a status light,
               and a PC app that records, trains and predicts.
             </p>
             <p class="text-sm text-text-base/70 mb-4">
@@ -178,6 +289,22 @@ import ModelComparison from '../components/ModelComparison.astro';
             </p>
             <div class="space-y-2 text-sm">
               <div class="flex justify-between"><span class="text-text-base/60">Sensors</span><span class="font-mono text-orange-bold">60 (15&times;4)</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Rate</span><span class="font-mono text-orange-bold">17 to 19 Hz per band</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Flexion MAE (temporal split)</span><span class="font-mono text-orange-bold">0.110</span></div>
+              <div class="flex justify-between"><span class="text-text-base/60">Analysis Data</span><span class="font-mono text-orange-bold">~22,300 frames, 2 wearers</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-orange-light overflow-hidden">
+          <div class="p-6 bg-gradient-to-br from-orange-light/30 to-white">
+            <h3 class="text-xl font-bold text-text-base mb-2">2025 FlexGrid prototype</h3>
+            <p class="text-text-base/70 mb-4">
+              An early FlexGrid board with a 4&times;16 grid of 64 cells. Its single-session
+              results are the ones plotted above.
+            </p>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-text-base/60">Sensors</span><span class="font-mono text-orange-bold">64 (4&times;16)</span></div>
               <div class="flex justify-between"><span class="text-text-base/60">Best R²</span><span class="font-mono text-orange-bold">0.660</span></div>
               <div class="flex justify-between"><span class="text-text-base/60">Model</span><span class="font-mono text-orange-bold">ExtraTrees (300)</span></div>
               <div class="flex justify-between"><span class="text-text-base/60">Training Data</span><span class="font-mono text-orange-bold">1,669 samples</span></div>
@@ -187,9 +314,9 @@ import ModelComparison from '../components/ModelComparison.astro';
 
         <div class="rounded-2xl border border-blue-light overflow-hidden">
           <div class="p-6 bg-gradient-to-br from-blue-light/30 to-white">
-            <h3 class="text-xl font-bold text-text-base mb-2">OM-12 SensorBand</h3>
+            <h3 class="text-xl font-bold text-text-base mb-2">OM-12 SensorBand (earlier generation)</h3>
             <p class="text-text-base/70 mb-4">
-              3 SensorBand banks with 4 sensors each. Legacy wearable form factor —
+              3 SensorBand banks with 4 Hall-effect sensors each. Legacy wearable form factor,
               the original proof-of-concept device.
             </p>
             <div class="space-y-2 text-sm">
@@ -216,7 +343,7 @@ import ModelComparison from '../components/ModelComparison.astro';
           </div>
           <div>
             <h4 class="font-semibold text-text-base">Data Capture</h4>
-            <p class="text-text-base/70 text-sm">Sensor packets and LASK5 labels received over UDP, paired by timestamp</p>
+            <p class="text-text-base/70 text-sm">Sensor packets received over UDP and paired by timestamp with labels from the LASK5 or Meta Quest hand tracking</p>
           </div>
         </div>
         <div class="flex gap-4">
@@ -260,7 +387,8 @@ import ModelComparison from '../components/ModelComparison.astro';
       <div class="mt-8 p-4 rounded-xl bg-orange-light/30 border border-orange-primary/20 text-sm text-text-base/70">
         <strong class="text-text-base">Key finding:</strong> Sensor baselines shift between sessions (mean values drift by ~300),
         making cross-session prediction unreliable. All training and test data must come from the same session
-        until calibration/normalization is solved.
+        until calibration/normalization is solved. The V4 report shows the same effect: flexion error
+        rises from 0.110 within a session to 0.24 across sessions of the same wearer.
       </div>
     </div>
   </section>

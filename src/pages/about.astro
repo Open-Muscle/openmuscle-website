@@ -7,7 +7,7 @@ const timeline = [
   { year: "2023", title: "OM-12 Custom Piston Sensors", desc: "The OM-12 band takes shape with 12 custom piston sensors arranged around the forearm. This was the design before the keyboard switch upgrade simplified manufacturing.", color: "orange", image: "/images/timeline/2023-om12-pistons.png" },
   { year: "2023", title: "OM-12 + LASK-5 Data Collection", desc: "Keyboard switches replace custom pistons. The LASK-5 labeling device captures ground-truth finger positions. First real paired datasets for ML training. Featured on Hackaday and Electromaker.", color: "blue", image: "/images/timeline/2023-om12-keyboard-lask5.png" },
   { year: "2024", title: "FlexGrid + LASK-5 Prototype", desc: "The FlexGrid concept comes to life — 60 sensors in a 15×4 flexible PCB grid paired with the LASK-5 for labeled data capture. A massive leap from the 12-sensor OM-12.", color: "orange", image: "/images/timeline/2024-flexgrid-lask5.png" },
-  { year: "2026", title: "FlexGrid Flexible PCB (Current)", desc: "The current flagship: a production-quality flexible PCB design with ESP32-S3, 60 pressure sensors at just 3mm thick. Ready for community testing and iteration.", color: "blue", image: "/images/timeline/2026-flexgrid-pcb.png" },
+  { year: "2026", title: "FlexGrid V4 Flexible PCB (Current)", desc: "The current flagship: a production-quality flexible PCB design with ESP32-S3, 60 Velostat pressure cells at just 3mm thick, fabricated in June 2026. Ready for community testing and iteration.", color: "blue", image: "/images/timeline/2026-flexgrid-pcb.png" },
 ];
 ---
 
@@ -50,7 +50,7 @@ const timeline = [
           <p class="text-text-base/70 leading-relaxed">
             Democratize prosthetic sensor technology. Build affordable, open-source, open-hardware pressure myography
             sensors that anyone can build, modify, and improve. Every design file, every line of code, every dataset
-            is published openly under MIT (software), CERN-OHL-S v2.0 (hardware), and Creative Commons (documentation) licenses.
+            is published openly under MIT (software), CERN-OHL-S v2.0 (hardware), CC BY 4.0 (data), and Creative Commons (documentation) licenses.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ const timeline = [
             { label: "Random Forest", sub: "ML Model" },
             { label: "UDP", sub: "Data Transport" },
             { label: "Flexible PCB", sub: "Sensor Board" },
-            { label: "Hall Effect", sub: "Sensor Type" },
+            { label: "Velostat", sub: "Pressure Cells" },
             { label: "3D Printing", sub: "Enclosures" },
           ].map((tech) => (
             <div class="card text-center py-4">
@@ -124,7 +124,7 @@ const timeline = [
           </div>
           <div class="card bg-white/80 text-center p-6">
             <div class="text-2xl font-bold text-orange-bold mb-2">CC</div>
-            <div class="text-sm text-text-base/60">Documentation</div>
+            <div class="text-sm text-text-base/60">Documentation & Data</div>
           </div>
         </div>
       </div>

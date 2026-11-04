@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import research from '../data/research.json';
 ---
 
 <BaseLayout
@@ -88,9 +89,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             </div>
             <h3 class="text-lg font-bold text-text-base mb-2">LASK5 actuator wand</h3>
             <p class="text-text-base/70 text-sm flex-1">
-              A handheld labeling wand drives four linear actuators that the wearer follows.
-              Each actuator position is a precise, repeatable label for one finger. This is
-              the ground truth behind the finger-prediction results on the
+              A handheld labeling wand with four spring-loaded pistons that the wearer's fingers press.
+              Each piston position is a precise, repeatable label for one finger. This is
+              the ground truth behind the 2025 finger-prediction charts on the
               <a href="/technology" class="text-blue-primary hover:text-orange-bold underline">Technology</a>
               page.
             </p>
@@ -102,13 +103,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="rounded-2xl border border-blue-light overflow-hidden bg-white">
           <div class="p-6 bg-gradient-to-br from-blue-light/30 to-white h-full flex flex-col">
             <div class="flex items-center gap-2 mb-3">
-              <span class="px-2.5 py-0.5 rounded-full bg-blue-primary/20 text-blue-primary text-xs font-semibold">In development</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-orange-bold/20 text-orange-bold text-xs font-semibold">Live</span>
             </div>
             <h3 class="text-lg font-bold text-text-base mb-2">VR hand tracking</h3>
             <p class="text-text-base/70 text-sm flex-1">
-              A WebXR client uses a Meta Quest 3's onboard hand tracking to record the full
+              A WebXR client uses a Meta Quest 3S's onboard hand tracking to record the full
               articulated hand pose while the wearer moves naturally. Far richer than four
-              actuators, and the model's live prediction is drawn back as a ghost hand
+              pistons, and the model's live prediction is drawn back as a ghost hand
               overlaid on the real one.
             </p>
             <p class="text-xs text-text-base/50 mt-4">Full hand pose, no extra hardware on the hand.</p>
@@ -140,16 +141,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <div class="max-w-5xl mx-auto px-4">
       <div class="flex items-center gap-3 mb-6">
         <h2 class="text-3xl font-bold text-text-base">VR integration</h2>
-        <span class="px-3 py-1 rounded-full bg-blue-primary/20 text-blue-primary text-sm font-semibold">In development</span>
+        <span class="px-3 py-1 rounded-full bg-orange-bold/20 text-orange-bold text-sm font-semibold">Live</span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <p class="text-text-base/70 mb-4">
             Virtual reality headsets ship with high-quality hand tracking built in. OpenMuscle
-            uses it as a ground-truth sensor. The wearer puts on the band and a Quest 3, and a
+            uses it as a ground-truth sensor. The wearer puts on the band and a Quest 3S, and a
             browser-based WebXR client streams the headset's per-joint hand pose to the same
             pipeline that records the band's pressure data. The two are paired by timestamp
-            into training examples.
+            into training examples. This is how the FlexGrid V4 recordings in the open
+            dataset were labeled.
           </p>
           <p class="text-text-base/70">
             During inference, the loop runs the other way: the model's prediction renders as a
@@ -161,7 +163,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <div class="rounded-2xl border border-blue-light/40 bg-bg-cool p-6">
           <h4 class="font-semibold text-text-base mb-4">What VR capture adds</h4>
           <ul class="space-y-3 text-sm text-text-base/70">
-            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Full articulated hand pose instead of four actuator values</li>
+            <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Full articulated hand pose instead of four piston values</li>
             <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Nothing strapped to the hand, so motion stays natural</li>
             <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Live ghost-hand overlay for instant model feedback</li>
             <li class="flex gap-3"><span class="text-blue-primary font-bold">&rarr;</span> Runs in the headset browser, no app install</li>
@@ -248,7 +250,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         grows with every new recording.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="https://github.com/Open-Muscle/OpenMuscle-Dataset" target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center justify-center gap-2">
+        <a href={research.datasetHf} target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center justify-center gap-2">
           Browse the dataset
         </a>
         <a href="/get-involved" class="btn-secondary inline-flex items-center justify-center gap-2">

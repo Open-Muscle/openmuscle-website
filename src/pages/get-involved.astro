@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import research from '../data/research.json';
 ---
 
 <BaseLayout
   title="Get Involved"
-  description="Ways to help build open prosthetic sensing: test the FlexGrid hardware, write firmware and machine learning code, or spread the word. Links to GitHub and YouTube."
+  description="Ways to help build open prosthetic sensing: build or request a FlexGrid band, test the hardware, share data, write firmware and machine learning code, or spread the word. Links to GitHub, Discord and YouTube."
 >
   <section class="blueprint-grid-dense">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -29,6 +30,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             We need people to wear the FlexGrid and LASK5 to generate diverse training data.
             More testers = better ML models = better prosthetics for everyone.
             Got a band? <a href="https://github.com/Open-Muscle/OpenMuscle-Software/blob/main/docs/getting-started.md" target="_blank" class="text-blue-primary hover:underline">Start with the getting-started guide</a>.
+            No band yet? <a href="#get-the-hardware" class="text-blue-primary hover:underline">See how to get one</a>.
           </p>
         </div>
 
@@ -58,6 +60,40 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             Star our repos, share our videos, tell a friend. The more people who know about OpenMuscle,
             the faster we can make prosthetic tech accessible to everyone.
           </p>
+        </div>
+      </div>
+
+      <!-- Get the hardware -->
+      <div id="get-the-hardware" class="mb-16 rounded-2xl border border-orange-primary/30 bg-orange-light/30 p-6 sm:p-8 scroll-mt-20">
+        <h2 class="text-2xl font-bold mb-6">Get the <span class="text-orange-bold">Hardware</span></h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div class="space-y-4 text-text-base/70 leading-relaxed">
+            <p>
+              The band is not sold. You can build your own from the KiCad files and the bill of
+              materials in
+              <a href="https://github.com/Open-Muscle/OpenMuscle-FlexGrid" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">OpenMuscle-FlexGrid</a>,
+              and have the boards made at a PCB assembly service.
+            </p>
+            <p>
+              I also give boards away for research, in small numbers, usually one or two. I try to
+              cover the cost, shipping included, because I want the research in the right hands.
+            </p>
+            <p>
+              To ask, open an issue on
+              <a href="https://github.com/Open-Muscle/OpenMuscle-Hub/issues" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">OpenMuscle-Hub</a>
+              or say hello on the
+              <a href="https://discord.gg/WstCaqUG63" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">OpenMuscle Discord</a>.
+            </p>
+          </div>
+          <div>
+            <h3 class="font-semibold text-lg mb-2">Share your data</h3>
+            <p class="text-text-base/70 leading-relaxed">
+              Have recordings to contribute? Start with the
+              <a href={research.datasetHf} target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">dataset page on Hugging Face</a>
+              to see what the open dataset holds, then open an issue on
+              <a href="https://github.com/Open-Muscle/OpenMuscle-Hub/issues" target="_blank" rel="noopener noreferrer" class="text-blue-primary hover:text-orange-bold underline">OpenMuscle-Hub</a>.
+            </p>
+          </div>
         </div>
       </div>
 

@@ -11,7 +11,7 @@ OpenMuscle is early-stage research, not a finished product. The headline result 
 - [Robotics](https://openmuscle.org/robotics/): Using human hand demonstrations from the band plus VR or HID labels as training data for robot hands.
 - [Research and data](https://openmuscle.org/research/): The dataset, the paper, baseline results, and how to cite.
 - [Repositories](https://openmuscle.org/repositories/): Every OpenMuscle GitHub repository with its license.
-- [Get involved](https://openmuscle.org/get-involved/): Ways to test hardware, write code, and contribute data.
+- [Get involved](https://openmuscle.org/get-involved/): Ways to build or request a band, test hardware, write code, and contribute data.
 - [About](https://openmuscle.org/about/): Origin story, mission, project timeline and licenses.
 - [Visual timeline](https://openmuscle.org/visual-timeline/): Photo timeline of the prototypes from 2022 to the FlexGrid flexible PCB.
 
